@@ -14,6 +14,6 @@ class AdminMiddleware
             return $next($request);
         }
 
-        return redirect('/')->with('error', 'غير مسموح بالدخول.');
+        return redirect('/')->with('error', 'غير مسموح الدخول.');
     }
 }

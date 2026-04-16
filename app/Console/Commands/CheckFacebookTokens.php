@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 class CheckFacebookTokens extends Command
 {
     protected $signature = 'fb:check-tokens';
-    protected $description = 'Check Facebook page tokens status';
+    protected $description = 'Check tokens status';
 
     public function handle()
     {
@@ -17,7 +17,7 @@ class CheckFacebookTokens extends Command
         $pages = FacebookPage::with('user')->get();
         
         if ($pages->isEmpty()) {
-            $this->warn('لا توجد صفحات مرتبطة ');
+            $this->warn('لا توجد صفحات مربوطة ');
             return;
         }
 
@@ -45,10 +45,10 @@ class CheckFacebookTokens extends Command
 
             if ($response->successful()) {
                 $data = $response->json();
-                $this->info(" Token صالح");
+                $this->info("Token صالح");
             } else {
                 $error = $response->json();
-                $this->error("Token غير صالح: " . ($error['error']['message'] ?? 'Unknown error'));
+                $this->error(" غير صالح: " . ($error['error']['message'] ?? 'Unknown error'));
             }
         } catch (\Exception $e) {
             $this->error("خطأ في الفحص: {$e->getMessage()}");
