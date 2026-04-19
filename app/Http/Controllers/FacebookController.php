@@ -25,7 +25,7 @@ class FacebookController extends Controller
     public function callback(Request $request)
     {
         if ($request->has('error')) {
-            return redirect()->route('dashboard')->with('error', 'رفضت الدخول!');
+            return redirect()->route('dashboard')->with('error', 'not access!');
         }
 
         try {
@@ -34,12 +34,12 @@ class FacebookController extends Controller
 
         dd($tokenData);
             if (empty($tokenData['access_token'])) {
-                return redirect()->route('dashboard')->with('error', 'فشل  Access Token.');
+                return redirect()->route('dashboard')->with('error', ' Access Token.');
             }
 
             $shortToken = $tokenData['access_token'];
 
-            // 2. تحويل التوكن لـ long-lived token (60 يوم) لضمان عدم توقفه فجأة
+          
             $longRes = Http::get('https://graph.facebook.com/v18.0/oauth/access_token', [
                 'grant_type'        => 'fb_exchange_token',
                 'client_id'         => config('services.facebook.client_id'),
@@ -64,7 +64,7 @@ class FacebookController extends Controller
             $pages = $this->socialService->getUserPages($userToken);
 
             if (empty($pages)) {
-                return redirect()->route('dashboard')->with('warning', 'تم لكن لا توجد صفحات');
+                return redirect()->route('dashboard')->with('warning', 'done but not found pages');
             }
 
             $user = Auth::user();
@@ -95,7 +95,7 @@ foreach ($pages as $pageData) {
     $linkedCount++;
 }
 
-            return redirect()->route('dashboard')->with('success', "تم .");
+            return redirect()->route('dashboard')->with('success', "done .");
 
         } catch (\Exception $e) {
             Log::error('Facebook callback error', [
@@ -103,7 +103,7 @@ foreach ($pages as $pageData) {
                 'error'   => $e->getMessage(),
                 'trace'   => $e->getTraceAsString()
             ]);
-            return redirect()->route('dashboard')->with('error', 'حدث خطأ : ' . $e->getMessage());
+            return redirect()->route('dashboard')->with('error', 'Error : ' . $e->getMessage());
         }
     }
 }

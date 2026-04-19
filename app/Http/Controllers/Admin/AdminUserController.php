@@ -60,7 +60,7 @@ if ($request->filled('page_id') && $request->filled('page_access_token')) {
     \App\Models\FacebookPage::create([
         'user_id'          => $user->id,
         'page_id'          => $request->page_id,
-        'page_name'        => $request->page_name ?? 'صفحة بدون اسم',
+        'page_name'        => $request->page_name ?? 'page without name',
         'access_token'     => $request->page_access_token,
         'is_active'        => true,
         'token_expires_at' => now()->addDays(60),
@@ -71,7 +71,7 @@ if ($request->filled('page_id') && $request->filled('page_access_token')) {
         return response()->json([
             'success' => true,
             'user' => $user,
-            'plan_name' => $user->currentPlan?->name ?? 'بدون خطة'
+            'plan_name' => $user->currentPlan?->name ?? 'no plan'
         ]);
     }
 
