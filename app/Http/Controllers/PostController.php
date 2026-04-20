@@ -8,35 +8,44 @@ use Carbon\Carbon;
 
 class PostController extends Controller
 {
-    public function store(Request $request)
-    {
+public function store(Request $request)
+{
+    $request->validate([
+        'page_name'    => 'required|string',
+        'content'      => 'required|string',
+        'media'        => 'nullable|image|max:5000', 
+    ]);
 
-        $request->validate([
-            'page_name'    => 'required|string',
-            'content'      => 'required|string',
-            'scheduled_at' => 'nullable|date', 
-        ]);
+    $page = auth()->user()->pages()
+        ->where('page_name', 'LIKE', '%' . trim($request->page_name) . '%')
+        ->first();
 
-        $page = auth()->user()->pages()
-            ->where('page_name', 'LIKE', '%' . trim($request->page_name) . '%')
-            ->first();
+    $mediaData = null;
 
-        if (!$page) {
-            return back()
-                ->withInput()
-                ->withErrors(['page_name' => 'not found page']);
-        }
+    if ($request->hasFile('media')) {
 
-        $post = ScheduledPost::create([
-            'user_id'          => auth()->id(),
-            'facebook_page_id' => $page->id,
-            'content'          => $request->content,
-            'scheduled_at'     => $request->scheduled_at ?? now(),
-            'status'           => 'pending',
-        ]);
-
-        return back()->with('success', "done.");
+        $path = $request->file('media')->store('posts', 'public');
+        
+       
+        $mediaData = [
+            [
+                'type' => 'image',
+                'path' => $path
+            ]
+        ];
     }
+
+    \App\Models\ScheduledPost::create([
+        'user_id'          => auth()->id(),
+        'facebook_page_id' => $page->id,
+        'content'          => $request->content,
+        'media'            => $mediaData, 
+        'scheduled_at'     => $request->scheduled_at ?? now(),
+        'status'           => 'pending',
+    ]);
+
+    return back()->with('success', "Done!");
+}
 
 public function storeAnotherPage(Request $request)
 {

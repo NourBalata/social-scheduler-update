@@ -1,121 +1,123 @@
+
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-            
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">جدولة منشور جديد</h2>
-                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                    خطة: {{ auth()->user()->plan->name }}
-                </span>
-            </div>
+<div class="container">
+    <h1>Schedule New Post</h1>
 
-            <form action="{{ route('posts.store') }}" method="POST" id="postForm" class="space-y-6">
+    @if($errors->any())
+    <div class="error-message">
+        <strong>Oops!</strong> Please fix the following:
+        <ul style="margin-top: 8px; padding-left: 20px;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Form -->
+        <div class="card">
+            <form action="{{ route('posts.store') }}" method="POST" id="postForm">
                 @csrf
                 
-                <div>
-                    <label for="facebook_page_id" class="block text-sm font-medium text-gray-700">انشر على صفحة:</label>
-                    <select name="facebook_page_id" id="facebook_page_id" 
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                <div class="form-group">
+                    <label for="page">Facebook Page *</label>
+                    <select name="facebook_page_id" id="page" required>
+                        <option value="">Select a page...</option>
                         @foreach($pages as $page)
-                            <option value="{{ $page->id }}">{{ $page->page_name }}</option>
+                            <option value="{{ $page->id }}" 
+                                    data-name="{{ $page->page_name }}"
+                                    {{ old('facebook_page_id') == $page->id ? 'selected' : '' }}>
+                                {{ $page->page_name }}
+                            </option>
                         @endforeach
                     </select>
-                    @error('facebook_page_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label for="postContent" class="block text-sm font-medium text-gray-700">محتوى المنشور</label>
-                    <textarea id="postContent" name="content" rows="6" 
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
-                        placeholder="اكتب ما تريد نشره هنا..." required>{{ old('content') }}</textarea>
-                    <div class="flex justify-between mt-1">
-                        <p class="text-xs text-gray-500">يدعم النصوص فقط حالياً.</p>
-                        <p class="text-sm {{ strlen(old('content')) > 5000 ? 'text-red-600' : 'text-gray-500' }}">
-                            <span id="charCount">0</span> / 5000
-                        </p>
-                    </div>
-                    @error('content') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="scheduledAt" class="block text-sm font-medium text-gray-700">تاريخ ووقت النشر</label>
-                        <input type="datetime-local" name="scheduled_at" id="scheduledAt" value="{{ old('scheduled_at') }}"
-                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
-                        @error('scheduled_at') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                    </div>
-                    
-                    <div class="flex items-end">
-                        <p class="text-xs text-gray-400 pb-2 italic">
-                            * سيتم تنفيذ النشر تلقائياً عبر نظام الجدولة.
-                        </p>
+                <div class="form-group">
+                    <label for="content">Post Content *</label>
+                    <textarea 
+                        name="content" 
+                        id="content" 
+                        rows="6" 
+                        placeholder="What's on your mind?"
+                        required>{{ old('content') }}</textarea>
+                    <div class="char-count">
+                        <span id="charCount">0</span> / 5,000 characters
                     </div>
                 </div>
 
-                <div class="pt-4 border-t flex items-center justify-end space-x-3 rtl:space-x-reverse">
-                    <a href="{{ route('posts.index') }}" class="text-gray-600 hover:underline">إلغاء</a>
-                    <button type="submit" id="submitBtn" 
-                        class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
-                        جدولة الآن
-                    </button>
+                <div class="form-group">
+                    <label for="media_url">Media URL (optional)</label>
+                    <input 
+                        type="url" 
+                        name="media_url" 
+                        id="media_url"
+                        placeholder="https://example.com/image.jpg"
+                        value="{{ old('media_url') }}">
+                    <small style="color: var(--text-secondary); font-size: 13px;">
+                        Add an image or video URL
+                    </small>
                 </div>
+
+                <div class="form-group">
+                    <label for="media_type">Media Type</label>
+                    <select name="media_type" id="media_type">
+                        <option value="">None</option>
+                        <option value="image" {{ old('media_type') == 'image' ? 'selected' : '' }}>Image</option>
+                        <option value="video" {{ old('media_type') == 'video' ? 'selected' : '' }}>Video</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduled_at">Schedule Date & Time *</label>
+                    <input 
+                        type="datetime-local" 
+                        name="scheduled_at" 
+                        id="scheduled_at"
+                        min="{{ now()->addMinutes(5)->format('Y-m-d\TH:i') }}"
+                        value="{{ old('scheduled_at') }}"
+                        required>
+                    <small style="color: var(--text-secondary); font-size: 13px;">
+                        Posts must be scheduled at least 5 minutes in the future
+                    </small>
+                </div>
+
+                <button type="submit" id="submitBtn">
+                    Schedule Post
+                </button>
             </form>
+        </div>
+
+        <!-- Live Preview -->
+        <div>
+            <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Preview</h2>
+            <div class="card post-preview">
+                <div class="post-preview-header">
+                    <div class="page-avatar" id="previewAvatar">
+                        ?
+                    </div>
+                    <div>
+                        <div class="page-name" id="previewPageName">
+                            Select a page
+                        </div>
+                        <div class="post-time" id="previewTime">
+                            Just now
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="post-content empty" id="previewContent">
+                    Your post content will appear here...
+                </div>
+                
+                <div class="post-media" id="previewMedia" style="display: none;">
+                    <img id="previewImage" src="" alt="Preview">
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const postContent = document.getElementById('postContent');
-    const charCount = document.getElementById('charCount');
-    const scheduledAt = document.getElementById('scheduledAt');
-    const postForm = document.getElementById('postForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    // 1. تحديث العداد عند التحميل (في حال وجود old value)
-    charCount.textContent = postContent.value.length;
-
-    // 2. عداد الحروف Real-time
-    postContent.addEventListener('input', function() {
-        const length = this.value.length;
-        charCount.textContent = length;
-        
-        if (length > 5000) {
-            charCount.classList.replace('text-gray-500', 'text-red-600');
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        } else {
-            charCount.classList.replace('text-red-600', 'text-gray-500');
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
-    });
-
-    // 3. ضبط الحد الأدنى للوقت (منع الماضي)
-    const now = new Date();
-    // تعديل الوقت ليناسب Local ISO string
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    scheduledAt.min = now.toISOString().slice(0, 16);
-
-    // 4. حماية من الـ Double Click وإظهار Loading بسيط
-    postForm.addEventListener('submit', function(e) {
-        if(postContent.value.length > 5000) {
-            e.preventDefault();
-            alert('المحتوى طويل جداً!');
-            return;
-        }
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            جاري الحفظ...
-        `;
-    });
-});
-</script>
 @endsection

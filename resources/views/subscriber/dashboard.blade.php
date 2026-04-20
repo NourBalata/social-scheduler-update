@@ -93,7 +93,8 @@
                             CREATE NEW POST
                         </h3>
 
-                        <form action="{{ route('posts.store') }}" method="POST" class="space-y-6">
+                        {{-- تعديل: إضافة enctype لإرسال الملفات --}}
+                        <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
@@ -121,6 +122,26 @@
                                 </div>
                             </div>
 
+                            {{-- إضافة: حقل رفع الميديا --}}
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Post Media (Image/Video)</label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center" id="upload-placeholder">
+                                            <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                            <p class="text-xs text-gray-500">Click to upload media</p>
+                                        </div>
+                                        <input type="file" name="media" id="media" class="hidden" accept="image/*,video/*" />
+                                        <div id="preview-container" class="hidden p-2 text-center">
+                                            <p id="file-name-display" class="text-sm font-bold text-blue-600"></p>
+                                            <p class="text-[10px] text-gray-400">Click to change</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Post Content</label>
                                 <textarea name="content" rows="4" required class="w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition p-4"
@@ -142,6 +163,7 @@
         </div>
     </div>
 
+    {{-- Modal Add Page --}}
     <div id="pageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4" dir="ltr">
         <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full text-left">
             <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
@@ -181,6 +203,7 @@
     </div>
 
     <script>
+        // Modal Logic
         const pageModal = document.getElementById('pageModal');
         const openPageModalBtn = document.getElementById('openPageModalBtnQuick');
         const closePageModalBtn = document.getElementById('closePageModalBtn');
@@ -198,10 +221,17 @@
             });
         });
 
-        pageModal?.addEventListener('click', (e) => {
-            if (e.target === pageModal) {
-                pageModal.classList.add('hidden');
-                pageModal.classList.remove('flex');
+        // Media Upload Logic
+        const mediaInput = document.getElementById('media');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewContainer = document.getElementById('preview-container');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        mediaInput?.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                uploadPlaceholder.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+                fileNameDisplay.textContent = this.files[0].name;
             }
         });
     </script>

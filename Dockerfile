@@ -23,7 +23,7 @@ RUN useradd -u 1000 -ms /bin/bash -g www www
 COPY . /var/www
 
 COPY --chown=www:www . /var/www
-
+RUN echo "upload_max_filesize=100M \n post_max_size=100M" > /usr/local/etc/php/conf.d/uploads.ini
 USER www
 
 EXPOSE 9000
