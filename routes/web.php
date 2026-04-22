@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\AIController;
 use App\Http\Controllers\FacebookController;
 Route::get('/', function () {
     return view('auth.login');
@@ -37,5 +38,8 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/storeAnotherPage', [PostController::class, 'storeAnotherPage'])->name('pages.storeAnotherPage')->middleware('auth');
 
-
+Route::middleware(['auth'])->group(function () {
+    Route::post('/ai/generate', [AIController::class, 'generate'])->name('ai.generate');
+});
+Route::post('/ai/generate-caption', [App\Http\Controllers\PostController::class, 'generateCaption'])->name('ai.caption');
 require __DIR__.'/auth.php';

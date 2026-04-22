@@ -27,6 +27,7 @@ class ScheduledPost extends Model
         'status' => 'string',
     ];
 
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

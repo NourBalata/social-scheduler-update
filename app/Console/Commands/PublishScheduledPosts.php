@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 class PublishScheduledPosts extends Command
 {
     protected $signature = 'posts:publish';
-    protected $description = 'publish posts!!';
+    protected $description = 'publish Post';
 
     public function handle()
     {

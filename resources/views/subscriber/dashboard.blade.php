@@ -31,6 +31,7 @@
                 </div>
             @endif
 
+            {{-- Stats Section --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 transition hover:shadow-md">
                     <div class="flex items-center justify-between">
@@ -62,7 +63,8 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                {{-- Sidebar --}}
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
                     <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center gap-2 border-b pb-3">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -84,6 +86,7 @@
                     </ul>
                 </div>
 
+                {{-- Main Form --}}
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
@@ -93,7 +96,6 @@
                             CREATE NEW POST
                         </h3>
 
-                        {{-- تعديل: إضافة enctype لإرسال الملفات --}}
                         <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -122,7 +124,7 @@
                                 </div>
                             </div>
 
-                            {{-- إضافة: حقل رفع الميديا --}}
+                            {{-- Media Upload --}}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Post Media (Image/Video)</label>
                                 <div class="flex items-center justify-center w-full">
@@ -142,10 +144,36 @@
                                 </div>
                             </div>
 
+                            {{-- Post Content Area WITH AI OPTION --}}
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Post Content</label>
-                                <textarea name="content" rows="4" required class="w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition p-4"
-                                          placeholder="What's on your mind?">{{ old('content') }}</textarea>
+                                <div class="flex justify-between items-end mb-2">
+                                    <label class="block text-sm font-semibold text-gray-700">Post Content</label>
+                                    
+                                    {{-- الزر السحري: المستخدم يضغط عليه فقط إذا أراد استخدام الـ AI --}}
+                                    <button type="button" id="ai-magic-btn" class="flex items-center gap-1.5 text-[11px] font-bold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        ✨ MAGIC WRITE
+                                    </button>
+                                </div>
+
+                                <div class="relative">
+                                    <textarea name="content" id="post-content" rows="6" required 
+                                              class="w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition p-4 text-gray-800"
+                                              placeholder="Write your post here... or type a small hint and click 'Magic Write'">{{ old('content') }}</textarea>
+                                    
+                                    {{-- Loading Spinner for AI --}}
+                                    <div id="ai-loader" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10">
+                                        <div class="flex flex-col items-center">
+                                            <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span class="text-xs font-bold text-indigo-700">AI is thinking...</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex justify-start">
@@ -169,59 +197,35 @@
             <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
                 <h3 class="text-xl font-bold text-gray-800">Add New Page</h3>
                 <button id="closePageModalBtn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-
             <form action="{{ route('pages.storeAnotherPage') }}" method="POST" class="p-6 space-y-4">
                 @csrf
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Page ID</label>
-                    <input type="text" name="page_id" placeholder="Enter ID..." class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Page Name</label>
-                    <input type="text" name="page_name" placeholder="Enter name..." class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Page Access Token</label>
-                    <input type="text" name="page_access_token" placeholder="Enter token..." class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                </div>
-
+                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page ID</label><input type="text" name="page_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page Name</label><input type="text" name="page_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page Access Token</label><input type="text" name="page_access_token" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
                 <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
-                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
-                        Save Page
-                    </button>
-                    <button type="button" id="cancelPageModalBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
-                        Cancel
-                    </button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">Save Page</button>
+                    <button type="button" id="cancelPageModalBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Modal Logic
+        // 1. Modal Logic
         const pageModal = document.getElementById('pageModal');
         const openPageModalBtn = document.getElementById('openPageModalBtnQuick');
         const closePageModalBtn = document.getElementById('closePageModalBtn');
         const cancelPageModalBtn = document.getElementById('cancelPageModalBtn');
 
-        openPageModalBtn?.addEventListener('click', () => {
-            pageModal.classList.remove('hidden');
-            pageModal.classList.add('flex');
-        });
-
+        openPageModalBtn?.addEventListener('click', () => { pageModal.classList.replace('hidden', 'flex'); });
         [closePageModalBtn, cancelPageModalBtn].forEach(btn => {
-            btn?.addEventListener('click', () => {
-                pageModal.classList.add('hidden');
-                pageModal.classList.remove('flex');
-            });
+            btn?.addEventListener('click', () => { pageModal.classList.replace('flex', 'hidden'); });
         });
 
-        // Media Upload Logic
+        // 2. Media Upload Logic
         const mediaInput = document.getElementById('media');
         const uploadPlaceholder = document.getElementById('upload-placeholder');
         const previewContainer = document.getElementById('preview-container');
@@ -234,5 +238,60 @@
                 fileNameDisplay.textContent = this.files[0].name;
             }
         });
+
+        // 3. AI MAGIC WRITE Logic
+        const aiBtn = document.getElementById('ai-magic-btn');
+        const contentTextarea = document.getElementById('post-content');
+        const aiLoader = document.getElementById('ai-loader');
+
+        aiBtn?.addEventListener('click', async () => {
+            const currentText = contentTextarea.value.trim();
+
+            if (currentText.length < 5) {
+                alert('Please type a few words first so AI can understand your idea!');
+                return;
+            }
+
+            // Start Loading UI
+            aiBtn.disabled = true;
+            aiLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch("{{ route('ai.caption') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ idea: currentText })
+                });
+
+                const data = await response.json();
+
+                if (data.captions) {
+                    // Typewriter Effect
+                    let i = 0;
+                    contentTextarea.value = ""; // Clear for the effect
+                    const fullText = data.captions[0];
+                    
+                    const typeEffect = setInterval(() => {
+                        if (i < fullText.length) {
+                            contentTextarea.value += fullText.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(typeEffect);
+                        }
+                    }, 20);
+                }
+            } catch (error) {
+                console.error('AI Error:', error);
+                alert('Connection to AI service failed.');
+            } finally {
+                aiBtn.disabled = false;
+                aiLoader.classList.add('hidden');
+            }
+        });
     </script>
+
+   
 </x-app-layout>

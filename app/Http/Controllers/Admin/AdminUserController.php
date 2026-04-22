@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 class AdminUserController extends Controller
 {
@@ -24,8 +25,19 @@ class AdminUserController extends Controller
     }
     else{
          $pages = auth()->user()->facebookPages;
-    
-    return view('subscriber.dashboard', compact('pages'));
+         $posts = auth()->user()->posts()->get();
+    $events = $posts->map(function ($post) {
+        return [
+            'title' => Str::limit($post->content, 20),
+            'start' => $post->scheduled_at->toIso8601String(),
+            'extendedProps' => [
+                'status' => $post->status,
+                'page' => $post->page_name,
+            ],
+            'color' => $post->published ? '#10b981' : '#3b82f6', // أخضر للمنشور، أزرق للمجدول
+        ];
+    });
+    return view('subscriber.dashboard', compact('pages','events'));
     }
 
 }

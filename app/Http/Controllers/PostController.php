@@ -64,4 +64,50 @@ public function storeAnotherPage(Request $request)
 
     return back()->with('success', 'done.');
 }
+public function generateCaption(Request $request)
+{
+    $request->validate(['idea' => 'required|string|max:300']);
+
+    $apiKey = config('services.gemini.key');
+    
+   
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(15)->post($url, [
+            'contents' => [
+                ['parts' => [['text' => "You are a social media expert. Write 3 Facebook post captions about the following idea. IMPORTANT: You must write in the SAME language as the idea. If the idea is in Arabic, write in Arabic. If in English, write in English. The idea is: \"{$request->idea}\". الأول رسمي، الثاني ودّي، الثالث جذاب. أعد النتيجة بصيغة JSON فقط: {\"captions\": [\"...\", \"...\", \"...\"]}"]]]
+            ],
+            
+            'generationConfig' => [
+                'response_mime_type' => 'application/json',
+            ],
+        ]);
+
+        if ($response->failed()) {
+          
+            \Log::error('Gemini API Error: ' . $response->body());
+            return response()->json(['error' => 'Error not conected with Ai!'], 500);
+        }
+
+        $data = $response->json();
+        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+        if (!$text) {
+            return response()->json(['error' => 'error!!'], 500);
+        }
+
+        $parsed = json_decode($text, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($parsed['captions'])) {
+            return response()->json(['error' => 'data not correct'], 500);
+        }
+
+        return response()->json(['captions' => $parsed['captions']]);
+
+    } catch (\Exception $e) {
+        \Log::error('Generation Exception: ' . $e->getMessage());
+        return response()->json(['error' => 'Errore Not predicted'], 500);
+    }
+}
 }

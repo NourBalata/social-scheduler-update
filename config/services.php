@@ -21,4 +21,7 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect'      => env('FACEBOOK_REDIRECT_URI'),
     ],
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+    ],
 ];
