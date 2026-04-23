@@ -148,8 +148,6 @@
                             <div>
                                 <div class="flex justify-between items-end mb-2">
                                     <label class="block text-sm font-semibold text-gray-700">Post Content</label>
-                                    
-                                    {{-- الزر السحري: المستخدم يضغط عليه فقط إذا أراد استخدام الـ AI --}}
                                     <button type="button" id="ai-magic-btn" class="flex items-center gap-1.5 text-[11px] font-bold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm active:scale-95 disabled:opacity-50">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -159,11 +157,10 @@
                                 </div>
 
                                 <div class="relative">
-                                    <textarea name="content" id="post-content" rows="6" required 
+                                    <textarea name="content" id="post-content" rows="6" required
                                               class="w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition p-4 text-gray-800"
                                               placeholder="Write your post here... or type a small hint and click 'Magic Write'">{{ old('content') }}</textarea>
-                                    
-                                    {{-- Loading Spinner for AI --}}
+
                                     <div id="ai-loader" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10">
                                         <div class="flex flex-col items-center">
                                             <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" viewBox="0 0 24 24">
@@ -186,6 +183,39 @@
                             </div>
                         </form>
                     </div>
+
+                    {{-- Bulk Schedule --}}
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Bulk Schedule via CSV
+                        </h3>
+
+                        <p class="text-xs text-gray-500 mb-4">
+                            Upload a CSV file with columns: <code class="bg-gray-100 px-1 rounded">page_name, content, scheduled_at</code><br>
+                            Example: <code class="bg-gray-100 px-1 rounded">My Page, Hello World!, 2026-05-01 10:00</code>
+                        </p>
+
+                        <form action="{{ route('posts.bulk') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-4">
+                            @csrf
+                            <label class="flex-1 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 cursor-pointer hover:border-green-400 transition">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                </svg>
+                                <span class="text-sm text-gray-500" id="csv-label">Choose CSV file...</span>
+                                <input type="file" name="csv_file" accept=".csv" class="hidden" onchange="document.getElementById('csv-label').textContent = this.files[0].name">
+                            </label>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-xl transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                </svg>
+                                Upload & Schedule
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -214,7 +244,6 @@
     </div>
 
     <script>
-        // 1. Modal Logic
         const pageModal = document.getElementById('pageModal');
         const openPageModalBtn = document.getElementById('openPageModalBtnQuick');
         const closePageModalBtn = document.getElementById('closePageModalBtn');
@@ -225,7 +254,6 @@
             btn?.addEventListener('click', () => { pageModal.classList.replace('flex', 'hidden'); });
         });
 
-        // 2. Media Upload Logic
         const mediaInput = document.getElementById('media');
         const uploadPlaceholder = document.getElementById('upload-placeholder');
         const previewContainer = document.getElementById('preview-container');
@@ -239,7 +267,6 @@
             }
         });
 
-        // 3. AI MAGIC WRITE Logic
         const aiBtn = document.getElementById('ai-magic-btn');
         const contentTextarea = document.getElementById('post-content');
         const aiLoader = document.getElementById('ai-loader');
@@ -252,7 +279,6 @@
                 return;
             }
 
-            // Start Loading UI
             aiBtn.disabled = true;
             aiLoader.classList.remove('hidden');
 
@@ -269,11 +295,10 @@
                 const data = await response.json();
 
                 if (data.captions) {
-                    // Typewriter Effect
                     let i = 0;
-                    contentTextarea.value = ""; // Clear for the effect
+                    contentTextarea.value = "";
                     const fullText = data.captions[0];
-                    
+
                     const typeEffect = setInterval(() => {
                         if (i < fullText.length) {
                             contentTextarea.value += fullText.charAt(i);
@@ -293,5 +318,4 @@
         });
     </script>
 
-   
 </x-app-layout>

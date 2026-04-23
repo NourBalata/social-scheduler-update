@@ -40,6 +40,9 @@ Route::post('/storeAnotherPage', [PostController::class, 'storeAnotherPage'])->n
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/ai/generate', [AIController::class, 'generate'])->name('ai.generate');
-});
+Route::post('/posts/bulk', [PostController::class, 'bulkSchedule'])->name('posts.bulk');
+    });
 Route::post('/ai/generate-caption', [App\Http\Controllers\PostController::class, 'generateCaption'])->name('ai.caption');
+ 
+
 require __DIR__.'/auth.php';

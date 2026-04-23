@@ -110,4 +110,72 @@ public function generateCaption(Request $request)
         return response()->json(['error' => 'Errore Not predicted'], 500);
     }
 }
+
+public function bulkSchedule(Request $request)
+{
+    $request->validate([
+        'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+    ]);
+
+    $file = $request->file('csv_file');
+    $lines = file($file->getRealPath(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+    $count = 0;
+    $errors = [];
+    $user = auth()->user();
+
+    foreach ($lines as $index => $line) {
+        if ($index === 0) continue; 
+
+        $cols = str_getcsv($line, ',');
+        if (count($cols) < 3) continue;
+
+        $page_name    = trim($cols[0]);
+        $content      = trim($cols[2]);
+        $scheduled_at = trim($cols[13]);
+
+        // تجاهل الصفوف الفاضية
+        if (empty($page_name) || empty($content) || empty($scheduled_at)) continue;
+
+        if ($user->remainingPostsCount() <= 0) {
+            $errors[] = "U finished count post.";
+            break;
+        }
+
+        $page = $user->pages()
+            ->where('page_name', 'LIKE', '%' . $page_name . '%')
+            ->first();
+
+        if (!$page) {
+            $errors[] = "code " . ($index + 1) . ": page '{$page_name}' not Know.";
+            continue;
+        }
+
+        try {
+            $publishDate = \Carbon\Carbon::createFromFormat('n/j/Y H:i', $scheduled_at);
+
+       if ($publishDate->isPast()) {
+    $publishDate = now()->addMinutes(2);
+}
+
+            $post = \App\Models\ScheduledPost::create([
+                'user_id'          => $user->id,
+                'facebook_page_id' => $page->id,
+                'content'          => $content,
+                'scheduled_at'     => $publishDate,
+                'status'           => 'pending',
+            ]);
+
+            $delay = now()->diffInSeconds($publishDate, false);
+            \App\Jobs\PublishPostJob::dispatch($post)->delay($delay > 0 ? $delay : 0);
+
+            $count++;
+        } catch (\Exception $e) {
+            $errors[] = "" . ($index + 1) . ": Erorr in date  '{$scheduled_at}' - " . $e->getMessage();
+        }
+    }
+
+    $message = "done your post {$count}  !";
+    return back()->with('success', $message)->withErrors($errors);
+}
 }

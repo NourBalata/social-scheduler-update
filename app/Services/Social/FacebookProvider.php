@@ -9,7 +9,7 @@ class FacebookProvider implements SocialMediaProvider
 {
     private string $base = 'https://graph.facebook.com/v19.0';
 
-    public function getAuthUrl(): string
+   public function getAuthUrl(?string $clientId = null): string
     {
         return 'https://www.facebook.com/v19.0/dialog/oauth?' . http_build_query([
             'client_id'    => config('services.facebook.client_id'),
