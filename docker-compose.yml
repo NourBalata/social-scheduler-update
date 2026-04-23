@@ -73,7 +73,6 @@ services:
       - db
       - redis
 
-  # صلحنا الإزاحة (Indentation) وغيرنا اسم الكونتينر
   scheduler:
     build:
       context: .

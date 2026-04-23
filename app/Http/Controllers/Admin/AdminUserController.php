@@ -23,22 +23,25 @@ class AdminUserController extends Controller
         
         return view('admin.dashboard', compact('users', 'plans'));
     }
-    else{
-         $pages = auth()->user()->facebookPages;
-         $posts = auth()->user()->posts()->get();
+ else {
+    $pages = auth()->user()->facebookPages;
+    $posts = auth()->user()->posts()->get();
+
     $events = $posts->map(function ($post) {
         return [
             'title' => Str::limit($post->content, 20),
             'start' => $post->scheduled_at->toIso8601String(),
             'extendedProps' => [
-                'status' => $post->status,
-                'page' => $post->page_name,
+                'status'  => $post->status,
+                'page'    => $post->page_name,
+                'content' => $post->content,
             ],
-            'color' => $post->published ? '#10b981' : '#3b82f6', // أخضر للمنشور، أزرق للمجدول
+            'color' => $post->status === 'published' ? '#10b981' : ($post->status === 'failed' ? '#ef4444' : '#3b82f6'),
         ];
     });
-    return view('subscriber.dashboard', compact('pages','events'));
-    }
+
+    return view('subscriber.dashboard', compact('pages', 'events'));
+}
 
 }
 public function store(Request $request)

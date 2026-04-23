@@ -44,5 +44,5 @@ Route::post('/posts/bulk', [PostController::class, 'bulkSchedule'])->name('posts
     });
 Route::post('/ai/generate-caption', [App\Http\Controllers\PostController::class, 'generateCaption'])->name('ai.caption');
  
-
+Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
 require __DIR__.'/auth.php';

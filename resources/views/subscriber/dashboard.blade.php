@@ -62,7 +62,9 @@
                 </div>
             </div>
 
+            {{-- 3-col grid: Sidebar + Main --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
                 {{-- Sidebar --}}
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
                     <h3 class="font-bold text-gray-800 mb-4 text-lg flex items-center gap-2 border-b pb-3">
@@ -86,8 +88,10 @@
                     </ul>
                 </div>
 
-                {{-- Main Form --}}
-                <div class="lg:col-span-2">
+                {{-- Main col --}}
+                <div class="lg:col-span-2 space-y-6">
+
+                    {{-- Create Post --}}
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                         <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +148,7 @@
                                 </div>
                             </div>
 
-                            {{-- Post Content Area WITH AI OPTION --}}
+                            {{-- Post Content + AI --}}
                             <div>
                                 <div class="flex justify-between items-end mb-2">
                                     <label class="block text-sm font-semibold text-gray-700">Post Content</label>
@@ -155,12 +159,10 @@
                                         ✨ MAGIC WRITE
                                     </button>
                                 </div>
-
                                 <div class="relative">
                                     <textarea name="content" id="post-content" rows="6" required
                                               class="w-full border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition p-4 text-gray-800"
                                               placeholder="Write your post here... or type a small hint and click 'Magic Write'">{{ old('content') }}</textarea>
-
                                     <div id="ai-loader" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10">
                                         <div class="flex flex-col items-center">
                                             <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" viewBox="0 0 24 24">
@@ -185,19 +187,17 @@
                     </div>
 
                     {{-- Bulk Schedule --}}
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mt-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Bulk Schedule via CSV
                         </h3>
-
                         <p class="text-xs text-gray-500 mb-4">
                             Upload a CSV file with columns: <code class="bg-gray-100 px-1 rounded">page_name, content, scheduled_at</code><br>
                             Example: <code class="bg-gray-100 px-1 rounded">My Page, Hello World!, 2026-05-01 10:00</code>
                         </p>
-
                         <form action="{{ route('posts.bulk') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-4">
                             @csrf
                             <label class="flex-1 flex items-center gap-3 border-2 border-dashed border-gray-300 rounded-xl px-4 py-3 cursor-pointer hover:border-green-400 transition">
@@ -216,8 +216,38 @@
                         </form>
                     </div>
 
+                </div>{{-- end lg:col-span-2 --}}
+            </div>{{-- end 3-col grid --}}
+
+            {{-- ===== CONTENT CALENDAR (full width, below everything) ===== --}}
+            <div class="mt-10">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Content Calendar
+                    </h2>
+                    <div class="flex items-center gap-4 text-xs font-semibold text-gray-500">
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Scheduled
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span> Published
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-400 inline-block"></span> Failed
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden p-4">
+                    <div id="fc-calendar"></div>
                 </div>
             </div>
+            {{-- ===== END CONTENT CALENDAR ===== --}}
+
         </div>
     </div>
 
@@ -227,14 +257,25 @@
             <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
                 <h3 class="text-xl font-bold text-gray-800">Add New Page</h3>
                 <button id="closePageModalBtn" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             </div>
             <form action="{{ route('pages.storeAnotherPage') }}" method="POST" class="p-6 space-y-4">
                 @csrf
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page ID</label><input type="text" name="page_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page Name</label><input type="text" name="page_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">Page Access Token</label><input type="text" name="page_access_token" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm"></div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Page ID</label>
+                    <input type="text" name="page_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Page Name</label>
+                    <input type="text" name="page_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Page Access Token</label>
+                    <input type="text" name="page_access_token" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                </div>
                 <div class="flex items-center gap-3 pt-4 border-t border-gray-100">
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">Save Page</button>
                     <button type="button" id="cancelPageModalBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
@@ -243,78 +284,143 @@
         </div>
     </div>
 
+    {{-- Post Detail Modal (Calendar) --}}
+    <div id="calModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="font-bold text-gray-800">Post Details</h3>
+                <button onclick="closeCalModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center gap-3">
+                    <span id="cal-badge" class="text-xs font-bold px-3 py-1 rounded-full"></span>
+                    <span id="cal-time"  class="text-sm text-gray-400"></span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Page</p>
+                    <p id="cal-page" class="text-sm font-semibold text-gray-700"></p>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Content</p>
+                    <p id="cal-content" class="text-sm text-gray-800 leading-relaxed bg-gray-50 rounded-xl p-3 whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- FullCalendar CSS + JS --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js"></script>
+
     <script>
-        const pageModal = document.getElementById('pageModal');
-        const openPageModalBtn = document.getElementById('openPageModalBtnQuick');
+        // ── Page Modal ──────────────────────────────────────────────
+        const pageModal       = document.getElementById('pageModal');
+        const openPageModalBtn  = document.getElementById('openPageModalBtnQuick');
         const closePageModalBtn = document.getElementById('closePageModalBtn');
         const cancelPageModalBtn = document.getElementById('cancelPageModalBtn');
 
-        openPageModalBtn?.addEventListener('click', () => { pageModal.classList.replace('hidden', 'flex'); });
-        [closePageModalBtn, cancelPageModalBtn].forEach(btn => {
-            btn?.addEventListener('click', () => { pageModal.classList.replace('flex', 'hidden'); });
-        });
+        openPageModalBtn?.addEventListener('click', () => pageModal.classList.replace('hidden','flex'));
+        [closePageModalBtn, cancelPageModalBtn].forEach(btn =>
+            btn?.addEventListener('click', () => pageModal.classList.replace('flex','hidden'))
+        );
 
-        const mediaInput = document.getElementById('media');
+        // ── Media preview ───────────────────────────────────────────
+        const mediaInput       = document.getElementById('media');
         const uploadPlaceholder = document.getElementById('upload-placeholder');
-        const previewContainer = document.getElementById('preview-container');
-        const fileNameDisplay = document.getElementById('file-name-display');
+        const previewContainer  = document.getElementById('preview-container');
+        const fileNameDisplay   = document.getElementById('file-name-display');
 
-        mediaInput?.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
+        mediaInput?.addEventListener('change', function () {
+            if (this.files?.[0]) {
                 uploadPlaceholder.classList.add('hidden');
                 previewContainer.classList.remove('hidden');
                 fileNameDisplay.textContent = this.files[0].name;
             }
         });
 
-        const aiBtn = document.getElementById('ai-magic-btn');
+        // ── AI Magic Write ──────────────────────────────────────────
+        const aiBtn          = document.getElementById('ai-magic-btn');
         const contentTextarea = document.getElementById('post-content');
-        const aiLoader = document.getElementById('ai-loader');
+        const aiLoader        = document.getElementById('ai-loader');
 
         aiBtn?.addEventListener('click', async () => {
             const currentText = contentTextarea.value.trim();
-
             if (currentText.length < 5) {
                 alert('Please type a few words first so AI can understand your idea!');
                 return;
             }
-
             aiBtn.disabled = true;
             aiLoader.classList.remove('hidden');
-
             try {
                 const response = await fetch("{{ route('ai.caption') }}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify({ idea: currentText })
                 });
-
                 const data = await response.json();
-
                 if (data.captions) {
                     let i = 0;
-                    contentTextarea.value = "";
+                    contentTextarea.value = '';
                     const fullText = data.captions[0];
-
                     const typeEffect = setInterval(() => {
-                        if (i < fullText.length) {
-                            contentTextarea.value += fullText.charAt(i);
-                            i++;
-                        } else {
-                            clearInterval(typeEffect);
-                        }
+                        if (i < fullText.length) { contentTextarea.value += fullText.charAt(i++); }
+                        else clearInterval(typeEffect);
                     }, 20);
                 }
-            } catch (error) {
-                console.error('AI Error:', error);
+            } catch (e) {
+                console.error('AI Error:', e);
                 alert('Connection to AI service failed.');
             } finally {
                 aiBtn.disabled = false;
                 aiLoader.classList.add('hidden');
             }
+        });
+
+        // ── FullCalendar ────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendar = new FullCalendar.Calendar(document.getElementById('fc-calendar'), {
+                initialView:  'dayGridMonth',
+                height:       'auto',
+                headerToolbar: {
+                    left:   'prev,next today',
+                    center: 'title',
+                    right:  'dayGridMonth,listMonth'
+                },
+                buttonText: { today: 'Today', month: 'Month', listMonth: 'List' },
+                events: @json($events),
+                eventClick: function (info) {
+                    const p      = info.event.extendedProps;
+                    const status = p.status ?? 'scheduled';
+                    const colors = {
+                        published: 'bg-green-100 text-green-800',
+                        failed:    'bg-red-100 text-red-700',
+                        scheduled: 'bg-blue-100 text-blue-800',
+                    };
+                    document.getElementById('cal-badge').className =
+                        'text-xs font-bold px-3 py-1 rounded-full ' + (colors[status] ?? colors.scheduled);
+                    document.getElementById('cal-badge').textContent   = status;
+                    document.getElementById('cal-time').textContent    =
+                        info.event.start?.toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' }) ?? '';
+                    document.getElementById('cal-page').textContent    = p.page    ?? '—';
+                    document.getElementById('cal-content').textContent = p.content ?? '';
+                    document.getElementById('calModal').classList.replace('hidden','flex');
+                },
+                eventDisplay: 'block',
+                dayMaxEvents: 3,
+            });
+            calendar.render();
+        });
+
+        // ── Calendar Modal close ────────────────────────────────────
+        function closeCalModal() {
+            document.getElementById('calModal').classList.replace('flex','hidden');
+        }
+        document.getElementById('calModal').addEventListener('click', function (e) {
+            if (e.target === this) closeCalModal();
         });
     </script>
 
