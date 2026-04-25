@@ -11,9 +11,10 @@ class PostController extends Controller
 public function store(Request $request)
 {
     $request->validate([
-        'page_name'    => 'required|string',
-        'content'      => 'required|string',
-        'media'        => 'nullable|image|max:5000', 
+        'page_name'        => 'required|string',
+        'content'          => 'required|string',
+        'media'            => 'nullable|file|max:102400',
+        'media_library_id' => 'nullable|exists:media_library,id',
     ]);
 
     $page = auth()->user()->pages()
@@ -23,23 +24,26 @@ public function store(Request $request)
     $mediaData = null;
 
     if ($request->hasFile('media')) {
-
+        // رفع مباشر
         $path = $request->file('media')->store('posts', 'public');
-        
-       
-        $mediaData = [
-            [
-                'type' => 'image',
-                'path' => $path
-            ]
-        ];
+        $mediaData = [['type' => 'image', 'path' => $path]];
+
+    } elseif ($request->filled('media_library_id')) {
+    
+        $media = \App\Models\Media::where('id', $request->media_library_id)
+                                  ->where('user_id', auth()->id())
+                                  ->first();
+        if ($media) {
+            $mediaData = [['type' => $media->type, 'path' => $media->path]];
+            $media->incrementUsage();
+        }
     }
 
     \App\Models\ScheduledPost::create([
         'user_id'          => auth()->id(),
         'facebook_page_id' => $page->id,
         'content'          => $request->content,
-        'media'            => $mediaData, 
+        'media'            => $mediaData,
         'scheduled_at'     => $request->scheduled_at ?? now(),
         'status'           => 'pending',
     ]);
@@ -134,7 +138,7 @@ public function bulkSchedule(Request $request)
         $content      = trim($cols[2]);
         $scheduled_at = trim($cols[13]);
 
-        // تجاهل الصفوف الفاضية
+      
         if (empty($page_name) || empty($content) || empty($scheduled_at)) continue;
 
         if ($user->remainingPostsCount() <= 0) {

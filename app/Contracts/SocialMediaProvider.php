@@ -4,7 +4,6 @@ namespace App\Contracts;
 
 interface SocialMediaProvider
 {
- // السماح بإضافة منصات أخرى
 
    public function getAuthUrl(string $clientId = null): string;
     public function getAccessToken(string $code): array;

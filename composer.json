@@ -6,9 +6,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "intervention/image": "^3.11",
         "laravel/framework": "^11.0",
         "laravel/socialite": "^5.26",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "livewire/livewire": "^3.4",
+        "php-ffmpeg/php-ffmpeg": "^1.4"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^4.2",

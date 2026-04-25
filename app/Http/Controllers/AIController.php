@@ -14,8 +14,7 @@ class AIController extends Controller
         ]);
 
         try {
-            // هنا نرسل الطلب للذكاء الاصطناعي (مثال باستخدام Gemini API)
-            // ملاحظة: ستحتاج لـ API Key من Google AI Studio
+      
             $apiKey = config('services.gemini.key'); 
             
             $response = Http::withHeaders([
