@@ -175,3 +175,6 @@ function showNotification(message, type = 'success') {
 }
 
 init();
+
+
+

@@ -234,3 +234,129 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 30000);
     }
 });
+
+
+
+
+
+
+
+
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+
+const pageModal = document.getElementById('pageModal');
+document.getElementById('openPageModalBtnQuick')?.addEventListener('click', () => pageModal.classList.replace('hidden','flex'));
+document.getElementById('closePageModalBtn')?.addEventListener('click',   () => pageModal.classList.replace('flex','hidden'));
+document.getElementById('cancelPageModalBtn')?.addEventListener('click',  () => pageModal.classList.replace('flex','hidden'));
+
+function setPostType(btn, type) {
+    document.querySelectorAll('.post-type-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('post_type_hidden').value = type;
+    document.getElementById('mediaSection').style.display = type === 'text' ? 'none' : 'block';
+}
+
+
+function updateCharCount(el) {
+    const len = el.value.length;
+    const counter = document.getElementById('charCounter');
+    counter.textContent = `${len} / 2200`;
+    counter.className = 'char-counter' + (len > 2000 ? ' warn' : '') + (len > 2200 ? ' over' : '');
+}
+
+
+function appendHashtag(tag) {
+    const ta = document.getElementById('post-content');
+    ta.value += (ta.value && !ta.value.endsWith(' ') ? ' ' : '') + tag + ' ';
+    updateCharCount(ta);
+    ta.focus();
+}
+
+
+function fillBestTime() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const val = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T18:00`;
+    document.getElementById('scheduled_at').value = val;
+    showToast('⚡ Best time set: Today at 6:00 PM');
+}
+
+
+function saveDraft() {
+    const content = document.getElementById('post-content').value;
+    if (!content.trim()) return showToast('⚠️ Write something first!');
+    localStorage.setItem('postflow_draft', content);
+    showToast('✅ Draft saved locally');
+}
+
+
+function showToast(msg, duration = 2800) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+}
+
+
+const aiBtn = document.getElementById('ai-magic-btn');
+const contentTextarea = document.getElementById('post-content');
+const aiLoader = document.getElementById('ai-loader');
+
+aiBtn?.addEventListener('click', async () => {
+    const text = contentTextarea.value.trim();
+    if (text.length < 5) { showToast('💡 Type a quick idea first!'); return; }
+    aiBtn.disabled = true;
+    aiLoader.style.display = 'flex';
+    try {
+        const res = await fetch("{{ route('ai.caption') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            credentials: 'same-origin',
+            body: JSON.stringify({ idea: text })
+        });
+        const data = await res.json();
+        if (data.captions) {
+            let i = 0;
+            contentTextarea.value = '';
+            const full = data.captions[0];
+            const timer = setInterval(() => {
+                if (i < full.length) { contentTextarea.value += full[i++]; updateCharCount(contentTextarea); }
+                else clearInterval(timer);
+            }, 18);
+        }
+    } catch(e) { showToast('AI connection failed'); }
+    finally { aiBtn.disabled = false; aiLoader.style.display = 'none'; }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

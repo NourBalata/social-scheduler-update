@@ -21,7 +21,17 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
         'redirect'      => env('FACEBOOK_REDIRECT_URI'),
     ],
-    'gemini' => [
-        'key' => env('GEMINI_API_KEY'),
+
+    
+'gemini' => [
+    'keys' => [
+        env('GEMINI_API_KEY_1'),
+        env('GEMINI_API_KEY_2'),
+        env('GEMINI_API_KEY_3'),
     ],
+],
+'groq' => [
+    'key' => env('GROQ_API_KEY'),
+],
+
 ];

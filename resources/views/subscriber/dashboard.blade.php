@@ -1,7 +1,7 @@
 <x-app-layout>
 
 {{-- Google Font: DM Sans + Syne --}}
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+{{-- <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"> --}}
 
 <style>
 :root {
@@ -344,7 +344,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                         </div>
                                     </div>
                                 </div>
-                                <div style="margin-top:8px;">
+                                {{-- <div style="margin-top:8px;">
                                     <p style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:6px;">✨ Suggested hashtags:</p>
                                     <div class="ai-suggestions" id="hashtagSuggestions">
                                         <span class="ai-suggestion-chip" onclick="appendHashtag('#marketing')">#marketing</span>
@@ -353,7 +353,13 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                         <span class="ai-suggestion-chip" onclick="appendHashtag('#growth')">#growth</span>
                                         <span class="ai-suggestion-chip" onclick="appendHashtag('#business')">#business</span>
                                     </div>
-                                </div>
+                                </div> --}}
+                                <div style="margin-top:8px;" id="hashtagSection">
+    <p style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:6px;">✨ Suggested hashtags:</p>
+    <div class="ai-suggestions" id="hashtagSuggestions">
+        {{-- تتعبى من الـ AI --}}
+    </div>
+</div>
                             </div>
 
                             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
@@ -597,8 +603,10 @@ const aiLoader = document.getElementById('ai-loader');
 aiBtn?.addEventListener('click', async () => {
     const text = contentTextarea.value.trim();
     if (text.length < 5) { showToast('💡 Type a quick idea first!'); return; }
+
     aiBtn.disabled = true;
     aiLoader.style.display = 'flex';
+
     try {
         const res = await fetch("{{ route('ai.caption') }}", {
             method: 'POST',
@@ -606,26 +614,58 @@ aiBtn?.addEventListener('click', async () => {
             credentials: 'same-origin',
             body: JSON.stringify({ idea: text })
         });
+
         const data = await res.json();
-        if (data.captions) {
-            let i = 0;
-            contentTextarea.value = '';
-            const full = data.captions[0];
-            const timer = setInterval(() => {
-                if (i < full.length) { contentTextarea.value += full[i++]; updateCharCount(contentTextarea); }
-                else clearInterval(timer);
-            }, 18);
+
+        if (res.status === 429) {
+            showToast('⏳ ' + (data.error ?? 'AI busy, try again in a minute.'), 4000);
+            return;
         }
-    } catch(e) { showToast('❌ AI connection failed'); }
-    finally { aiBtn.disabled = false; aiLoader.style.display = 'none'; }
+
+        if (data.captions && data.captions.length > 0) {
+            // ── عرض الـ captions كـ chips للاختيار ──
+            showCaptionPicker(data.captions);
+        }
+
+        if (data.hashtags && data.hashtags.length > 0) {
+            // ── عرض الهاشتاقات كـ chips ──
+            const container = document.getElementById('hashtagSuggestions');
+            container.innerHTML = '';
+            data.hashtags.forEach(tag => {
+                const chip = document.createElement('span');
+                chip.className = 'ai-suggestion-chip';
+                chip.textContent = tag;
+                chip.onclick = () => {
+                    // toggle — لو مضغوط يشيله، لو لأ يضيفه
+                    if (chip.classList.contains('selected-hashtag')) {
+                        chip.classList.remove('selected-hashtag');
+                        chip.style.background = '';
+                        chip.style.color = '';
+                        removeHashtagFromContent(tag);
+                    } else {
+                        chip.classList.add('selected-hashtag');
+                        chip.style.background = '#4f46e5';
+                        chip.style.color = '#fff';
+                        appendHashtag(tag);
+                    }
+                };
+                container.appendChild(chip);
+            });
+        }
+
+    } catch(e) {
+        showToast('❌ AI connection failed');
+    } finally {
+        aiBtn.disabled = false;
+        aiLoader.style.display = 'none';
+    }
 });
 
-// ── Calendar Stats ───────────────────────────────────────────────────────────
 const events = @json($events);
 document.getElementById('stat-scheduled').textContent = events.filter(e => e.extendedProps?.status === 'scheduled').length || events.filter(e => !e.extendedProps?.status).length;
 document.getElementById('stat-published').textContent = events.filter(e => e.extendedProps?.status === 'published').length;
 
-// ── FullCalendar ─────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
     const cal = new FullCalendar.Calendar(document.getElementById('fc-calendar'), {
         initialView: 'dayGridMonth',
@@ -654,9 +694,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function closeCalModal() { document.getElementById('calModal').classList.replace('flex','hidden'); }
 document.getElementById('calModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeCalModal(); });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MEDIA LIBRARY — الحل الكامل
-// ══════════════════════════════════════════════════════════════════════════════
 
 const ML = { page:1, type:'', search:'', selected:null, loading:false, timer:null };
 
@@ -729,9 +766,7 @@ async function mlLoadMedia(append = false) {
             ...(ML.search && { search: ML.search }),
         });
 
-        // ─────────────────────────────────────────────────────────────
-        // ✅ الحل: credentials:'same-origin' يبعت الـ session للـ API
-        // ─────────────────────────────────────────────────────────────
+
 const res = await mlFetch(`/media?${params}`);
 
         if (res.status === 401) {
@@ -762,7 +797,7 @@ const res = await mlFetch(`/media?${params}`);
     } catch (e) {
         if (!append) {
             grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;color:#9ca3af;font-size:13px;">
-                ❌ Failed to load media.<br>
+                 Failed to load media.<br>
                 <small style="color:#d1d5db;">Make sure <code>/api/media</code> route exists and you're logged in.</small>
             </div>`;
         }
@@ -835,7 +870,7 @@ function mlConfirmSelection() {
     document.getElementById('media').value = '';
     showPostMediaPreview(ML.selected.url, ML.selected.name, ML.selected.type);
     closeMediaLibrary();
-    showToast('✅ Media selected from library');
+    showToast(' Media selected from library');
 }
 
 function mlLoadMore() {
@@ -843,7 +878,7 @@ function mlLoadMore() {
     mlLoadMedia(true);
 }
 
-// ── Upload داخل المكتبة ────────────────────────────────────────────────────
+
 async function mlUploadFiles(files) {
     const prog = document.getElementById('mlUploadProgress');
     prog.innerHTML = '';
@@ -897,9 +932,6 @@ async function mlUploadFiles(files) {
 
                 xhr.onerror = () => reject(new Error('Network error'));
 
-                // ─────────────────────────────────────────────────────
-                // ✅ الحل: withCredentials = true يبعت الـ session cookie
-                // ─────────────────────────────────────────────────────
                 xhr.open('POST', '/media/upload');
                 xhr.withCredentials = true;                     // ← هاد المهم
                 xhr.setRequestHeader('X-CSRF-TOKEN', CSRF);
@@ -920,7 +952,7 @@ async function mlUploadFiles(files) {
     }, 1200);
 }
 
-// ── Drag & Drop ────────────────────────────────────────────────────────────
+
 function mlDragOver(e) {
     e.preventDefault();
     const zone = document.getElementById('mlDropZone');
@@ -938,7 +970,7 @@ function mlDrop(e) {
     mlUploadFiles(e.dataTransfer.files);
 }
 
-// ── Post Media Preview ─────────────────────────────────────────────────────
+
 function handleDirectUpload(input) {
     if (!input.files?.[0]) return;
     document.getElementById('mediaLibraryId').value = '';
@@ -969,6 +1001,86 @@ function clearPostMedia() {
     document.getElementById('postMediaPreviewVid').src          = '';
     document.getElementById('postMediaPreview').style.display   = 'none';
     document.getElementById('postMediaUploadArea').style.display = 'flex';
+}
+
+// ── Caption Picker ────────────────────────────────────────────────────────
+function showCaptionPicker(captions) {
+    // شيل أي picker قديم
+    document.getElementById('captionPicker')?.remove();
+
+    const picker = document.createElement('div');
+    picker.id = 'captionPicker';
+    picker.style.cssText = `
+        background: #f8faff;
+        border: 1.5px solid #bfdbfe;
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    `;
+
+    const title = document.createElement('p');
+    title.style.cssText = 'font-size:11px;font-weight:700;color:#4f46e5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;';
+    title.textContent = '✨ Choose a caption:';
+    picker.appendChild(title);
+
+    captions.forEach((caption, i) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.style.cssText = `
+            text-align: left;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #e0e7ff;
+            background: #fff;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+            line-height: 1.5;
+            transition: all .15s;
+            font-family: 'DM Sans', sans-serif;
+        `;
+        btn.innerHTML = `<span style="font-size:10px;font-weight:800;color:#7c3aed;margin-right:6px;">Option ${i+1}</span>${caption}`;
+
+        btn.onmouseover = () => { btn.style.borderColor = '#6366f1'; btn.style.background = '#eef2ff'; };
+        btn.onmouseout  = () => { btn.style.borderColor = '#e0e7ff'; btn.style.background = '#fff'; };
+
+        btn.onclick = () => {
+            // typewriter effect
+            contentTextarea.value = '';
+            let j = 0;
+            const timer = setInterval(() => {
+                if (j < caption.length) {
+                    contentTextarea.value += caption[j++];
+                    updateCharCount(contentTextarea);
+                } else {
+                    clearInterval(timer);
+                }
+            }, 14);
+            picker.remove();
+            // reset الهاشتاقات المختارة
+            document.querySelectorAll('.selected-hashtag').forEach(el => {
+                el.classList.remove('selected-hashtag');
+                el.style.background = '';
+                el.style.color = '';
+            });
+        };
+
+        picker.appendChild(btn);
+    });
+
+    // أضف الـ picker فوق الـ textarea مباشرة
+    const textareaWrapper = contentTextarea.parentElement;
+    textareaWrapper.parentElement.insertBefore(picker, textareaWrapper);
+}
+
+// ── Remove Hashtag from content ───────────────────────────────────────────
+function removeHashtagFromContent(tag) {
+    const ta = document.getElementById('post-content');
+    ta.value = ta.value.replace(new RegExp('\\s?' + tag.replace('#', '\\#') + '\\s?', 'g'), ' ').trim();
+    updateCharCount(ta);
 }
 </script>
 

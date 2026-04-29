@@ -1,6 +1,6 @@
 <x-app-layout>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    {{-- <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"> --}}
 
     <style>
         :root {
@@ -603,7 +603,7 @@
                 });
             </script>
 
-            @vite(['resources/js/admin/users.js'])
+            {{-- @vite(['resources/js/admin/app.js']) --}}
 
         @else
             @include('subscriber.dashboard')

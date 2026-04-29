@@ -12,35 +12,42 @@ use Illuminate\Support\Facades\Auth;
 class AdminUserController extends Controller
 {
 
-    public function index()
+
+public function index()
 {
     $user = auth()->user();
 
-  
     if ($user->is_admin) {
-       $users = User::with('plan')->where('is_admin', 0)->get();
+        $users = User::with('plan')->where('is_admin', 0)->get();
         $plans = \App\Models\Plan::all();
-        
+
         return view('admin.dashboard', compact('users', 'plans'));
     }
-    else{
-         $pages = auth()->user()->facebookPages;
-         $posts = auth()->user()->posts()->get();
-        //  $media = auth()->user()->mediaLibrary()->latest()->get();
+
+    $pages = $user->facebookPages;
+    $posts = $user->posts()->get();
+
     $events = $posts->map(function ($post) {
+        // ── تحديد اللون حسب الـ status ──────────────────────────
+        $color = match($post->status ?? 'scheduled') {
+            'published' => '#10b981', // أخضر
+            'failed'    => '#ef4444', // أحمر
+            default     => '#3b82f6', // أزرق
+        };
+
         return [
-            'title' => Str::limit($post->content, 20),
-            'start' => $post->scheduled_at->toIso8601String(),
+            'title' => \Str::limit($post->content ?? '', 25),
+            'start' => optional($post->scheduled_at)->toIso8601String(),
+            'color' => $color,
             'extendedProps' => [
-                'status' => $post->status,
-                'page' => $post->page_name,
+                'status'  => $post->status  ?? 'scheduled',
+                'page'    => $post->page_name ?? '—',
+                'content' => $post->content  ?? '',  // ← كان ناقص — بيسبب مشكلة في الـ modal
             ],
-            'color' => $post->published ? '#10b981' : '#3b82f6', 
         ];
     });
-    return view('subscriber.dashboard', compact('pages','events'));
-    }
 
+    return view('subscriber.dashboard', compact('pages', 'events'));
 }
 public function store(Request $request)
 {

@@ -281,4 +281,24 @@ class FacebookService implements SocialMediaProvider
 
         return $response->successful() ? $response->json('data') : null;
     }
+
+ 
+public function getPageInsights(string $token, string $pageId, string $metric, string $period = 'day'): array
+{
+    $response = Http::get("{$this->baseUrl}/{$pageId}/insights", [
+        'metric'       => $metric,
+        'period'       => $period,
+        'access_token' => $token,
+    ]);
+    return $response->json('data') ?? [];
+}
+
+public function getPostInsights(string $token, string $postId): array
+{
+    $response = Http::get("{$this->baseUrl}/{$postId}/insights", [
+        'metric'       => 'post_impressions,post_engaged_users,post_reactions_by_type_total',
+        'access_token' => $token,
+    ]);
+    return $response->json('data') ?? [];
+}
 }

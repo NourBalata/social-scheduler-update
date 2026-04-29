@@ -107,9 +107,5 @@ public function plan()
 }
 
 
-// public function mediaLibrary(): HasMany
-// {
-//     return $this->hasMany(MediaLibrary::class);
-// }
 
 }

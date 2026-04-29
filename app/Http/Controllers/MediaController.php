@@ -172,7 +172,7 @@ class MediaController extends Controller
         );
 
         return response()->json([
-            'message' => 'تم تعديل الصورة بنجاح',
+            'message' => 'donw edit photo',
             'data'    => new MediaResource($edited->load('tags')),
         ]);
     }

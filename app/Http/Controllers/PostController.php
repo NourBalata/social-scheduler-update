@@ -72,46 +72,34 @@ public function generateCaption(Request $request)
 {
     $request->validate(['idea' => 'required|string|max:300']);
 
-    $apiKey = config('services.gemini.key');
-    
-   
-    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}";
+    $prompt = "You are a social media expert. Write 3 Facebook post captions about: \"{$request->idea}\".
+               Write in the SAME language as the idea. No hashtags inside the captions.
+               Also provide 6 relevant hashtags separately.
+               Return ONLY valid JSON:
+               {
+                 \"captions\": [\"...\", \"...\", \"...\"],
+                 \"hashtags\": [\"#tag1\", \"#tag2\", \"#tag3\", \"#tag4\", \"#tag5\", \"#tag6\"]
+               }";
 
     try {
-        $response = \Illuminate\Support\Facades\Http::timeout(15)->post($url, [
-            'contents' => [
-                ['parts' => [['text' => "You are a social media expert. Write 3 Facebook post captions about the following idea. IMPORTANT: You must write in the SAME language as the idea. If the idea is in Arabic, write in Arabic. If in English, write in English. The idea is: \"{$request->idea}\". الأول رسمي، الثاني ودّي، الثالث جذاب. أعد النتيجة بصيغة JSON فقط: {\"captions\": [\"...\", \"...\", \"...\"]}"]]]
-            ],
-            
-            'generationConfig' => [
-                'response_mime_type' => 'application/json',
-            ],
-        ]);
-
-        if ($response->failed()) {
-          
-            \Log::error('Gemini API Error: ' . $response->body());
-            return response()->json(['error' => 'Error not conected with Ai!'], 500);
-        }
-
-        $data = $response->json();
-        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-        if (!$text) {
-            return response()->json(['error' => 'error!!'], 500);
-        }
-
+        $gemini = new \App\Services\GeminiService();
+        $text   = $gemini->generate($prompt);
         $parsed = json_decode($text, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE || !isset($parsed['captions'])) {
-            return response()->json(['error' => 'data not correct'], 500);
+        if (!isset($parsed['captions'])) {
+            return response()->json(['error' => 'Invalid response format'], 500);
         }
 
-        return response()->json(['captions' => $parsed['captions']]);
+        return response()->json([
+            'captions'  => $parsed['captions'],
+            'hashtags'  => $parsed['hashtags'] ?? [],
+        ]);
 
     } catch (\Exception $e) {
-        \Log::error('Generation Exception: ' . $e->getMessage());
-        return response()->json(['error' => 'Errore Not predicted'], 500);
+        return match($e->getMessage()) {
+            'rate_limit_exceeded' => response()->json(['error' => 'AI busy, try again in a minute.'], 429),
+            default               => response()->json(['error' => 'Something went wrong.'], 500),
+        };
     }
 }
 
@@ -121,28 +109,31 @@ public function bulkSchedule(Request $request)
         'csv_file' => 'required|file|mimes:csv,txt|max:2048',
     ]);
 
-    $file = $request->file('csv_file');
-    $lines = file($file->getRealPath(), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
+    $file  = $request->file('csv_file');
     $count = 0;
     $errors = [];
-    $user = auth()->user();
+    $user  = auth()->user();
 
-    foreach ($lines as $index => $line) {
-        if ($index === 0) continue; 
+    // ← نستخدم SplFileObject بدل file() عشان نتعامل مع encoding أحسن
+    $csv = new \SplFileObject($file->getRealPath());
+    $csv->setFlags(\SplFileObject::READ_CSV | \SplFileObject::SKIP_EMPTY | \SplFileObject::DROP_NEW_LINE);
+    $csv->setCsvControl(',');
 
-        $cols = str_getcsv($line, ',');
-        if (count($cols) < 3) continue;
+    foreach ($csv as $index => $cols) {
+        // تخطى الـ header
+        if ($index === 0) continue;
+
+        // تخطى الصفوف الفاضية
+        if (!is_array($cols) || count($cols) < 3) continue;
 
         $page_name    = trim($cols[0]);
-        $content      = trim($cols[2]);
-        $scheduled_at = trim($cols[13]);
+        $content      = trim($cols[1]); // ← كانت [2] وهي غلط، content هي العمود الثاني
+        $scheduled_at = trim($cols[2]); // ← كانت [13] وهي البق الأساسي
 
-      
         if (empty($page_name) || empty($content) || empty($scheduled_at)) continue;
 
         if ($user->remainingPostsCount() <= 0) {
-            $errors[] = "U finished count post.";
+            $errors[] = "You've reached your posts limit.";
             break;
         }
 
@@ -151,16 +142,21 @@ public function bulkSchedule(Request $request)
             ->first();
 
         if (!$page) {
-            $errors[] = "code " . ($index + 1) . ": page '{$page_name}' not Know.";
+            $errors[] = "Row " . ($index + 1) . ": Page '{$page_name}' not found.";
             continue;
         }
 
         try {
-            $publishDate = \Carbon\Carbon::createFromFormat('n/j/Y H:i', $scheduled_at);
+            // جرب format-ين — m/d/Y H:i أو Y-m-d H:i
+            try {
+                $publishDate = \Carbon\Carbon::createFromFormat('n/j/Y H:i', $scheduled_at);
+            } catch (\Exception $e) {
+                $publishDate = \Carbon\Carbon::parse($scheduled_at);
+            }
 
-       if ($publishDate->isPast()) {
-    $publishDate = now()->addMinutes(2);
-}
+            if ($publishDate->isPast()) {
+                $publishDate = now()->addMinutes(2);
+            }
 
             $post = \App\Models\ScheduledPost::create([
                 'user_id'          => $user->id,
@@ -174,12 +170,14 @@ public function bulkSchedule(Request $request)
             \App\Jobs\PublishPostJob::dispatch($post)->delay($delay > 0 ? $delay : 0);
 
             $count++;
+
         } catch (\Exception $e) {
-            $errors[] = "" . ($index + 1) . ": Erorr in date  '{$scheduled_at}' - " . $e->getMessage();
+            $errors[] = "Row " . ($index + 1) . ": Date error '{$scheduled_at}' — " . $e->getMessage();
         }
     }
 
-    $message = "done your post {$count}  !";
-    return back()->with('success', $message)->withErrors($errors);
+    return back()
+        ->with('success', "Done! {$count} post(s) scheduled.")
+        ->withErrors($errors);
 }
 }

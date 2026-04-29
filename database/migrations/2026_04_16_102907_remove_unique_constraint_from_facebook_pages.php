@@ -11,21 +11,24 @@ return new class extends Migration
      */
 public function up(): void
 {
-    Schema::table('facebook_pages', function (Blueprint $table) {
-    
-        $table->dropForeign(['user_id']);
-
-
-        $table->dropUnique('facebook_pages_user_id_page_id_unique');
-
-        $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-    });
+Schema::create('post_analytics', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('scheduled_post_id')->constrained()->cascadeOnDelete();
+    $table->integer('likes')->default(0);
+    $table->integer('comments')->default(0);
+    $table->integer('shares')->default(0);
+    $table->integer('reach')->default(0);
+    $table->integer('impressions')->default(0);
+    $table->json('reactions')->nullable();
+    $table->timestamp('fetched_at')->nullable();
+    $table->timestamps();
+});
 }
 
 public function down(): void
 {
     Schema::table('facebook_pages', function (Blueprint $table) {
         $table->unique(['user_id', 'page_id']);
-    });لالا
+    });
 }
 };
