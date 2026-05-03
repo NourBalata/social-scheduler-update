@@ -22,7 +22,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'verified'])->group(function () {
 
 
-    Route::get('/dashboard', [SubscriberDashboardController::class, 'index'])->name('subscriber.dashboard');
+    Route::get('/dashboard', [SubscriberDashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
