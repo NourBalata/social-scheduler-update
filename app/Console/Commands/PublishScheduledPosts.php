@@ -2,81 +2,35 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\PublishPostJob;
 use App\Models\ScheduledPost;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 class PublishScheduledPosts extends Command
 {
-    protected $signature = 'posts:publish';
-    protected $description = 'publish Post';
+    protected $signature   = 'posts:publish';
+    protected $description = 'Dispatch pending scheduled posts that are due for publishing.';
 
-    public function handle()
+    public function handle(): int
     {
-        $this->info('Starting check for scheduled posts...');
-        $posts = ScheduledPost::where('status', 'pending')
-            ->where('scheduled_at', '<=', now())
-            ->with(['facebookPage'])
+        $posts = ScheduledPost::ready()
+            ->with('facebookPage')
             ->get();
 
-        $this->info("Posts ready to publish: {$posts->count()}");
+        if ($posts->isEmpty()) {
+            $this->info('No posts due for publishing.');
+            return self::SUCCESS;
+        }
+
+        $this->info("Dispatching {$posts->count()} post(s)...");
 
         foreach ($posts as $post) {
-            $this->publishPost($post);
+            PublishPostJob::dispatch($post);
+            $this->line("  → Dispatched post #{$post->id}");
         }
+
+        $this->info('Done.');
+
+        return self::SUCCESS;
     }
-
-    private function publishPost(ScheduledPost $post)
-{
-    try {
-        $page = $post->facebookPage;
-        $accessToken = $page->access_token;
-        $url = "https://graph.facebook.com/v18.0";
-
-
-        if (!empty($post->media) && is_array($post->media)) {
-            
-         
-            $mediaItem = $post->media[0]; 
-            $filePath = storage_path('app/public/' . ltrim($mediaItem['path'], '/'));
-
-            $this->info("Checking file at: " . $filePath);
-
-            if (file_exists($filePath)) {
-                $fileContents = file_get_contents($filePath);
-                $fileName = basename($filePath);
-
-       
-                $endpoint = ($mediaItem['type'] === 'video') ? 'videos' : 'photos';
-                $captionField = ($mediaItem['type'] === 'video') ? 'description' : 'caption';
-
-                $response = Http::timeout(120)
-                    ->attach('source', $fileContents, $fileName)
-                    ->post("{$url}/{$page->page_id}/{$endpoint}", [
-                        'access_token' => $accessToken,
-                        $captionField => $post->content,
-                    ]);
-            } else {
-                $this->error("File not found on disk: " . $filePath);
-                return;
-            }
-        } else {
-        
-            $response = Http::timeout(60)->post("{$url}/{$page->page_id}/feed", [
-                'access_token' => $accessToken,
-                'message' => $post->content,
-            ]);
-        }
-
-        if ($response->successful()) {
-            $post->update(['status' => 'published', 'published_at' => now()]);
-            $this->info("Published successfully!");
-        } else {
-            $this->error("FB Error: " . $response->body());
-        }
-
-    } catch (\Exception $e) {
-        $this->error("Error: " . $e->getMessage());
-    }
-}
 }

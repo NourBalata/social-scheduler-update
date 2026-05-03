@@ -3,93 +3,64 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\FacebookPage;
 use App\Models\Plan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
+
 class AdminUserController extends Controller
 {
-
-
-public function index()
-{
-    $user = auth()->user();
-
-    if ($user->is_admin) {
-        $users = User::with('plan')->where('is_admin', 0)->get();
-        $plans = \App\Models\Plan::all();
+    /**
+     * Admin dashboard — list of all non-admin users and plans.
+     */
+    public function index()
+    {
+        $users = User::with('currentPlan')->where('is_admin', false)->get();
+        $plans = Plan::all();
 
         return view('admin.dashboard', compact('users', 'plans'));
     }
 
-    $pages = $user->facebookPages;
-    $posts = $user->posts()->get();
-
-    $events = $posts->map(function ($post) {
-        // ── تحديد اللون حسب الـ status ──────────────────────────
-        $color = match($post->status ?? 'scheduled') {
-            'published' => '#10b981', // أخضر
-            'failed'    => '#ef4444', // أحمر
-            default     => '#3b82f6', // أزرق
-        };
-
-        return [
-            'title' => \Str::limit($post->content ?? '', 25),
-            'start' => optional($post->scheduled_at)->toIso8601String(),
-            'color' => $color,
-            'extendedProps' => [
-                'status'  => $post->status  ?? 'scheduled',
-                'page'    => $post->page_name ?? '—',
-                'content' => $post->content  ?? '',  // ← كان ناقص — بيسبب مشكلة في الـ modal
-            ],
-        ];
-    });
-
-    return view('subscriber.dashboard', compact('pages', 'events'));
-}
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string',
-        'email' => 'required|email|unique:users',
-        'password' => 'required',
-        'plan_id' => 'required|exists:plans,id',
-        
-    ]);
-
-    $user = User::create([
-    'name'             => $request->name,
-    'email'            => $request->email,
-    'password'         => Hash::make($request->password),
-    'plan_id'          => $request->plan_id,
-    'fb_user_id'       => $request->fb_user_id,
-    'fb_access_token'  => $request->fb_access_token,
-    'fb_client_id'     => $request->fb_client_id,
-    'fb_client_secret' => $request->fb_client_secret,
-    'is_admin'         => false,
-]);
-if ($request->filled('page_id') && $request->filled('page_access_token')) {
-    \App\Models\FacebookPage::create([
-        'user_id'          => $user->id,
-        'page_id'          => $request->page_id,
-        'page_name'        => $request->page_name ?? 'page without name',
-        'access_token'     => $request->page_access_token,
-        'is_active'        => true,
-        'token_expires_at' => now()->addDays(60),
-    ]);
-}
-  
-    if ($request->ajax()) {
-        return response()->json([
-            'success' => true,
-            'user' => $user,
-            'plan_name' => $user->currentPlan?->name ?? 'no plan!'
+    /**
+     * Create a new subscriber account, optionally with a linked Facebook page.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|string|min:8',
+            'plan_id'  => 'required|exists:plans,id',
         ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'plan_id'  => $request->plan_id,
+            'is_admin' => false,
+        ]);
+
+        if ($request->filled('page_id') && $request->filled('page_access_token')) {
+            FacebookPage::create([
+                'user_id'          => $user->id,
+                'page_id'          => $request->page_id,
+                'page_name'        => $request->page_name ?? 'Unnamed Page',
+                'access_token'     => encrypt($request->page_access_token),
+                'is_active'        => true,
+                'token_expires_at' => now()->addDays(60),
+            ]);
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success'   => true,
+                'user'      => $user,
+                'plan_name' => $user->currentPlan?->name ?? 'No plan',
+            ]);
+        }
+
+        return back()->with('success', 'User created successfully.');
     }
-
-    return back()->with('success', 'Added!!');
-}
-
 }

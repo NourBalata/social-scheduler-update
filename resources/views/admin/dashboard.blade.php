@@ -435,7 +435,7 @@
                                 </td>
 
                                 <td style="text-align:center;">
-                                    @if($user->pages && $user->pages->count())
+                                    @if($user->facebookPages && $user->facebookPages->count())
                                         <span class="badge badge-green">Connected</span>
                                     @else
                                         <span class="badge badge-gray">Not connected</span>

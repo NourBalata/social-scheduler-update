@@ -2,20 +2,27 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
     use Notifiable;
 
-protected $fillable = [
-    'name', 'email', 'password', 'plan_id', 'is_admin', 'plan_expires_at',
-  'fb_user_id', 'fb_access_token', 
-];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'plan_id',
+        'is_admin',
+        'plan_expires_at',
+    ];
+
+    protected $with = ['currentPlan', 'facebookPages'];
+
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
@@ -25,11 +32,11 @@ protected $fillable = [
         'is_admin'          => 'boolean',
     ];
 
-
+    // ─── Relationships ────────────────────────────────────────────────────────
 
     public function currentPlan(): BelongsTo
     {
-        return $this->belongsTo(Plan::class, 'plan_id');
+        return $this->belongsTo(Plan::class, 'plan_id', 'id');
     }
 
     public function facebookAccounts(): HasMany
@@ -37,23 +44,25 @@ protected $fillable = [
         return $this->hasMany(FacebookAccount::class);
     }
 
-    public function pages(): HasMany
+    public function facebookPages(): HasMany
     {
         return $this->hasMany(FacebookPage::class);
     }
 
-    public function posts(): HasMany
+    public function scheduledPosts(): HasMany
     {
         return $this->hasMany(ScheduledPost::class);
     }
 
-
+    // ─── Plan Helpers ─────────────────────────────────────────────────────────
 
     public function hasActivePlan(): bool
     {
-        if (!$this->plan_id) return false;
-        
-        if ($this->plan_expires_at && $this->plan_expires_at->isPast()) {
+        if (! $this->plan_id) {
+            return false;
+        }
+
+        if ($this->plan_expires_at?->isPast()) {
             return false;
         }
 
@@ -62,24 +71,20 @@ protected $fillable = [
 
     public function canSchedulePost(): bool
     {
-       
-        if (!$this->hasActivePlan() || !$this->currentPlan) {
+        if (! $this->hasActivePlan() || ! $this->currentPlan) {
             return false;
         }
 
-        $usedThisMonth = $this->posts()
-            ->whereYear('scheduled_at', now()->year)
-            ->whereMonth('scheduled_at', now()->month)
-            ->count();
-
-        return $usedThisMonth < $this->currentPlan->posts_limit;
+        return $this->remainingPostsCount() > 0;
     }
 
     public function remainingPostsCount(): int
     {
-        if (!$this->hasActivePlan() || !$this->currentPlan) return 0;
+        if (! $this->hasActivePlan() || ! $this->currentPlan) {
+            return 0;
+        }
 
-        $used = $this->posts()
+        $used = $this->scheduledPosts()
             ->whereYear('scheduled_at', Carbon::now()->year)
             ->whereMonth('scheduled_at', Carbon::now()->month)
             ->count();
@@ -89,23 +94,10 @@ protected $fillable = [
 
     public function canAddPage(): bool
     {
-       
-        if (!$this->hasActivePlan() || !$this->currentPlan) return false;
+        if (! $this->hasActivePlan() || ! $this->currentPlan) {
+            return false;
+        }
 
-        return $this->pages()->count() < $this->currentPlan->pages_limit;
+        return $this->facebookPages()->count() < $this->currentPlan->pages_limit;
     }
-
-    public function facebookPages()
-    {
-
-    return $this->hasMany(\App\Models\FacebookPage::class);
-}
-
-public function plan()
-{
-    return $this->belongsTo(\App\Models\Plan::class);
-}
-
-
-
 }

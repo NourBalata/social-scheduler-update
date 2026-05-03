@@ -2,56 +2,59 @@
 
 namespace App\Console\Commands;
 
+use App\Contracts\SocialMediaProvider;
 use App\Models\FacebookPage;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
+
 class CheckFacebookTokens extends Command
 {
-    protected $signature = 'facebook:check-tokens';
-    protected $description = 'Check tokens status';
+    protected $signature   = 'facebook:check-tokens';
+    protected $description = 'Check the validity of all stored Facebook page access tokens.';
 
-    public function handle()
+    public function __construct(private readonly SocialMediaProvider $facebook)
     {
-        $this->info('check token!');
-        
+        parent::__construct();
+    }
+
+    public function handle(): int
+    {
         $pages = FacebookPage::with('user')->get();
-        
+
         if ($pages->isEmpty()) {
-            $this->warn('Not Found pages ');
-            return;
+            $this->warn('No Facebook pages found.');
+            return self::SUCCESS;
         }
+
+        $this->info("Checking {$pages->count()} page(s)...");
 
         foreach ($pages as $page) {
             $this->line('');
-            $this->info("page: {$page->page_name} (ID: {$page->id})");
-            $this->line("users: {$page->user->name} ({$page->user->email})");
-            
+            $this->info("Page : {$page->page_name} (DB ID: {$page->id})");
+            $this->line("Owner: {$page->user->name} <{$page->user->email}>");
+
             if (empty($page->access_token)) {
-                $this->error("Not Found Token!");
-            } else {
-                $tokenPreview = substr($page->access_token, 0, 20) . '...';
-                $this->info("Token : {$tokenPreview}");
-                $this->checkTokenValidity($page);
+                $this->error('  No token stored.');
+                continue;
             }
+
+            $this->checkToken($page);
         }
+
+        return self::SUCCESS;
     }
 
-    private function checkTokenValidity($page)
+    private function checkToken(FacebookPage $page): void
     {
         try {
-            $response = \Http::get("https://graph.facebook.com/v18.0/me", [
-                'access_token' => $page->access_token
-            ]);
+            $valid = $this->facebook->validateToken($page->access_token);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $this->info("Token usefull");
+            if ($valid) {
+                $this->info('سToken is valid.');
             } else {
-                $error = $response->json();
-                $this->error("unusefull: " . ($error['error']['message'] ?? 'Unknown error'));
+                $this->error('Token is invalid or expired.');
             }
         } catch (\Exception $e) {
-            $this->error("Error: {$e->getMessage()}");
+            $this->error("  ✗ Error: {$e->getMessage()}");
         }
     }
 }

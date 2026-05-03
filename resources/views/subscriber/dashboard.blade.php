@@ -3,130 +3,7 @@
 {{-- Google Font: DM Sans + Syne --}}
 {{-- <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"> --}}
 
-<style>
-:root {
-    --ink:    #0f1117;
-    --mist:   #f4f5f7;
-    --steel:  #e8eaed;
-    --blue:   #2563eb;
-    --blue-l: #eff6ff;
-    --green:  #10b981;
-    --amber:  #f59e0b;
-    --red:    #ef4444;
-    --card:   #ffffff;
-    --radius: 16px;
-}
 
-* { box-sizing: border-box; }
-body { font-family: 'DM Sans', sans-serif; background: #f0f2f5; }
-h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
-
-.dash-bg { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-.blob { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.07; animation:blobFloat 12s ease-in-out infinite; }
-.blob-1 { width:500px; height:500px; background:#2563eb; top:-120px; left:-100px; animation-delay:0s; }
-.blob-2 { width:400px; height:400px; background:#10b981; bottom:-80px; right:-80px; animation-delay:-4s; }
-.blob-3 { width:300px; height:300px; background:#f59e0b; top:40%; left:60%; animation-delay:-8s; }
-@keyframes blobFloat { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(30px,-20px) scale(1.05);} 66%{transform:translate(-20px,15px) scale(0.97);} }
-
-.dash-wrap { position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:32px 24px; }
-
-.dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
-.dash-header .brand { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; background:linear-gradient(135deg,var(--blue),#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px; }
-.user-chip { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--steel); padding:8px 14px 8px 8px; border-radius:40px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
-.user-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#7c3aed); color:#fff; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; }
-.user-chip span { font-size:13px; font-weight:500; color:#374151; }
-.logout-btn { display:flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:#ef4444; background:#fef2f2; border:1px solid #fecaca; padding:6px 12px; border-radius:8px; cursor:pointer; transition:all .15s; text-decoration:none; }
-.logout-btn:hover { background:#ef4444; color:#fff; border-color:#ef4444; }
-
-.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-@media(max-width:900px){ .stats-grid{grid-template-columns:repeat(2,1fr);} }
-@media(max-width:500px){ .stats-grid{grid-template-columns:1fr;} }
-
-.stat-card { background:var(--card); border-radius:var(--radius); padding:22px; border:1px solid var(--steel); box-shadow:0 1px 3px rgba(0,0,0,0.05); display:flex; align-items:center; gap:16px; transition:transform .2s,box-shadow .2s; animation:fadeUp .5s both; }
-.stat-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.09); }
-.stat-card:nth-child(1){ animation-delay:.05s } .stat-card:nth-child(2){ animation-delay:.1s } .stat-card:nth-child(3){ animation-delay:.15s } .stat-card:nth-child(4){ animation-delay:.2s }
-.stat-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.stat-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--ink); line-height:1; }
-.stat-label { font-size:12px; color:#6b7280; margin-top:3px; font-weight:500; }
-
-.main-grid { display:grid; grid-template-columns:280px 1fr; gap:24px; }
-@media(max-width:900px){ .main-grid{grid-template-columns:1fr;} }
-
-.sidebar-card { background:var(--card); border-radius:var(--radius); border:1px solid var(--steel); overflow:hidden; animation:fadeUp .5s .25s both; }
-.sidebar-section-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.08em; padding:18px 20px 10px; }
-.page-item { display:flex; align-items:center; justify-content:space-between; padding:11px 20px; transition:background .15s; cursor:default; }
-.page-item:hover { background:var(--blue-l); }
-.page-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.6;transform:scale(1.3);} }
-
-.best-times { margin:0; padding:16px 20px; border-top:1px solid var(--steel); }
-.best-times-title { font-size:12px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.07em; margin-bottom:12px; }
-.time-slot { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.time-slot-bar-wrap { flex:1; height:6px; background:var(--steel); border-radius:99px; overflow:hidden; }
-.time-slot-bar { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--blue),#7c3aed); animation:barGrow .8s ease both; }
-@keyframes barGrow { from{width:0 !important;} }
-.time-slot-label { font-size:11px; font-weight:600; color:#374151; white-space:nowrap; }
-.time-slot-pct { font-size:11px; color:#9ca3af; width:30px; text-align:right; }
-
-.quick-actions { padding:16px 20px; border-top:1px solid var(--steel); display:flex; flex-direction:column; gap:8px; }
-.quick-btn { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; border:1px solid var(--steel); font-size:13px; font-weight:600; color:#374151; background:var(--mist); cursor:pointer; transition:all .15s; text-decoration:none; }
-.quick-btn:hover { background:var(--blue-l); border-color:#bfdbfe; color:var(--blue); }
-
-.post-card { background:var(--card); border-radius:var(--radius); border:1px solid var(--steel); box-shadow:0 1px 3px rgba(0,0,0,0.05); overflow:hidden; animation:fadeUp .5s .3s both; }
-.post-card-header { padding:22px 28px 0; display:flex; align-items:center; gap:10px; }
-.post-card-header h3 { font-size:18px; font-weight:800; color:var(--ink); letter-spacing:-.3px; }
-.post-card-body { padding:20px 28px 28px; }
-
-.char-counter { font-size:11px; font-weight:600; color:#9ca3af; }
-.char-counter.warn { color:var(--amber); }
-.char-counter.over { color:var(--red); }
-
-.post-type-tabs { display:flex; gap:6px; margin-bottom:20px; background:var(--mist); padding:5px; border-radius:12px; width:fit-content; }
-.post-type-tab { padding:7px 16px; border-radius:9px; font-size:12px; font-weight:700; color:#6b7280; cursor:pointer; transition:all .15s; border:none; background:none; display:flex; align-items:center; gap:6px; }
-.post-type-tab.active { background:var(--card); color:var(--blue); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
-
-.ai-suggestions { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
-.ai-suggestion-chip { font-size:11px; font-weight:600; padding:4px 10px; background:#f0f4ff; color:#4f46e5; border-radius:99px; cursor:pointer; border:1px solid #c7d2fe; transition:all .15s; }
-.ai-suggestion-chip:hover { background:#4f46e5; color:#fff; }
-
-.dash-input { width:100%; border:1.5px solid var(--steel); border-radius:12px; padding:11px 16px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; transition:border-color .15s,box-shadow .15s; background:var(--card); }
-.dash-input:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
-.dash-textarea { width:100%; border:1.5px solid var(--steel); border-radius:12px; padding:14px 16px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--ink); outline:none; resize:vertical; min-height:140px; transition:border-color .15s,box-shadow .15s; background:var(--card); line-height:1.6; }
-.dash-textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
-.dash-label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:7px; }
-
-.btn-primary { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--blue),#1d4ed8); color:#fff; font-weight:700; font-size:14px; padding:12px 24px; border-radius:12px; border:none; cursor:pointer; transition:all .2s; box-shadow:0 4px 14px rgba(37,99,235,.3); font-family:'DM Sans',sans-serif; }
-.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(37,99,235,.4); }
-.btn-magic { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; font-weight:700; font-size:11px; padding:8px 14px; border-radius:9px; border:none; cursor:pointer; transition:all .2s; box-shadow:0 3px 10px rgba(124,58,237,.3); font-family:'DM Sans',sans-serif; }
-.btn-magic:hover { transform:translateY(-1px); box-shadow:0 5px 16px rgba(124,58,237,.4); }
-.btn-magic:disabled { opacity:.5; transform:none; cursor:not-allowed; }
-
-.bulk-card { background:linear-gradient(135deg,#f0fdf4,#ecfdf5); border:1px solid #d1fae5; border-radius:var(--radius); padding:22px 24px; animation:fadeUp .5s .35s both; }
-.calendar-wrap { background:var(--card); border-radius:var(--radius); border:1px solid var(--steel); padding:24px; margin-top:28px; animation:fadeUp .5s .4s both; }
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
-
-.toast { position:fixed; bottom:24px; right:24px; z-index:999; background:var(--ink); color:#fff; padding:12px 20px; border-radius:12px; font-size:13px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.2); transform:translateY(80px); opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); display:flex; align-items:center; gap:8px; }
-.toast.show { transform:translateY(0); opacity:1; }
-
-/* Media Library Modal */
-.ml-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:60; display:none; align-items:center; justify-content:center; padding:16px; }
-.ml-modal-backdrop.open { display:flex; }
-.ml-modal-inner { background:var(--card); border-radius:20px; width:100%; max-width:960px; height:min(88vh,680px); display:flex; flex-direction:column; animation:fadeUp .28s both; box-shadow:0 24px 64px rgba(0,0,0,.2); }
-.ml-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
-.ml-item { aspect-ratio:1; border-radius:10px; overflow:hidden; border:2px solid transparent; cursor:pointer; position:relative; background:var(--mist); transition:all .15s; }
-.ml-item img, .ml-item video { width:100%; height:100%; object-fit:cover; display:block; }
-.ml-item:hover { border-color:var(--blue); transform:scale(1.03); }
-.ml-item.selected { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.25); }
-.ml-item .ml-check { display:none; position:absolute; top:6px; right:6px; width:20px; height:20px; background:var(--blue); border-radius:50%; align-items:center; justify-content:center; }
-.ml-item.selected .ml-check { display:flex; }
-.ml-skeleton { aspect-ratio:1; border-radius:10px; background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%); background-size:200% 100%; animation:mlSkel 1.2s infinite; }
-@keyframes mlSkel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-@keyframes spin { to{transform:rotate(360deg);} }
-.fc .fc-button { font-family:'DM Sans',sans-serif !important; font-weight:600 !important; border-radius:8px !important; }
-.fc .fc-button-primary { background:#2563eb !important; border-color:#2563eb !important; }
-.fc .fc-day-today { background:#eff6ff !important; }
-</style>
 
 <x-slot name="header">
     <div style="display:flex;align-items:center;justify-content:space-between;" dir="ltr">
@@ -165,7 +42,6 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
             </div>
         @endif
 
-        {{-- Stats --}}
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon" style="background:#eff6ff;">
@@ -181,7 +57,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                     <svg width="22" height="22" fill="#10b981" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </div>
                 <div>
-                    <div class="stat-num">{{ auth()->user()->pages->count() }}</div>
+                    <div class="stat-num">{{ auth()->user()->facebookPages->count() }}</div>
                     <div class="stat-label">Linked Pages</div>
                 </div>
             </div>
@@ -205,14 +81,14 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
             </div>
         </div>
 
-        {{-- Main Grid --}}
+
         <div class="main-grid">
 
-            {{-- Sidebar --}}
+
             <div>
                 <div class="sidebar-card">
                     <div class="sidebar-section-title">Active Pages</div>
-                    @forelse(auth()->user()->pages as $page)
+                  @forelse(auth()->user()->facebookPages as $page)
                         <div class="page-item">
                             <span style="font-size:13px;font-weight:600;color:#111827;">{{ $page->page_name }}</span>
                             <div class="page-dot"></div>
@@ -248,7 +124,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                 </div>
             </div>
 
-            {{-- Main Content --}}
+   
             <div style="display:flex;flex-direction:column;gap:20px;">
 
                 <div class="post-card">
@@ -275,7 +151,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                     <label class="dash-label">Select Page</label>
                                     <input type="text" name="page_name" list="existing_pages" placeholder="Choose or type page name" value="{{ old('page_name') }}" class="dash-input">
                                     <datalist id="existing_pages">
-                                        @foreach(auth()->user()->pages as $page)
+                                     @foreach(auth()->user()->facebookPages as $page)
                                             <option value="{{ $page->page_name }}">
                                         @endforeach
                                     </datalist>
@@ -292,7 +168,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                 </div>
                             </div>
 
-                            {{-- Media Zone --}}
+                         
                             <div id="mediaSection" style="margin-bottom:20px;">
                                 <label class="dash-label">Post Media</label>
                                 <div id="postMediaPreview" style="display:none;margin-bottom:10px;position:relative;">
@@ -323,7 +199,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                 <input type="hidden" name="media_library_id" id="mediaLibraryId">
                             </div>
 
-                            {{-- Post Content --}}
+                       
                             <div style="margin-bottom:20px;">
                                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                                     <label class="dash-label" style="margin:0;">Post Content</label>
@@ -357,7 +233,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                 <div style="margin-top:8px;" id="hashtagSection">
     <p style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:6px;">✨ Suggested hashtags:</p>
     <div class="ai-suggestions" id="hashtagSuggestions">
-        {{-- تتعبى من الـ AI --}}
+     
     </div>
 </div>
                             </div>
@@ -367,9 +243,14 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                                     Schedule Post
                                 </button>
-                                <button type="button" onclick="saveDraft()" style="font-size:13px;font-weight:600;color:#6b7280;background:var(--mist);border:1.5px solid var(--steel);padding:10px 18px;border-radius:10px;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='var(--mist)'">
-                                    Save Draft
-                                </button>
+                               <div style="display:flex;gap:8px;">
+    <button type="button" onclick="saveAsTemplate()" style="font-size:13px;font-weight:600;color:#7c3aed;background:#f5f3ff;border:1.5px solid #e0d9ff;padding:10px 18px;border-radius:10px;cursor:pointer;" onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+        💾 Save as Template
+    </button>
+    <button type="button" onclick="saveDraft()" style="font-size:13px;font-weight:600;color:#6b7280;background:var(--mist);border:1.5px solid var(--steel);padding:10px 18px;border-radius:10px;cursor:pointer;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='var(--mist)'">
+        Save Draft
+    </button>
+</div>
                             </div>
                         </form>
                     </div>
@@ -399,7 +280,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
             </div>
         </div>
 
-        {{-- Calendar --}}
+
         <div class="calendar-wrap">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
                 <h2 style="font-size:18px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px;">
@@ -418,7 +299,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
     </div>
 </div>
 
-{{-- Modals --}}
+
 <div id="pageModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);max-width:480px;width:100%;">
         <div style="padding:20px 24px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
@@ -427,7 +308,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-        <form action="{{ route('pages.storeAnotherPage') }}" method="POST" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+        <form action="{{route('facebook.pages.store') }}" method="POST" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
             @csrf
             <div><label class="dash-label">Page ID</label><input type="text" name="page_id" class="dash-input" placeholder="e.g. 123456789"></div>
             <div><label class="dash-label">Page Name</label><input type="text" name="page_name" class="dash-input" placeholder="My Business Page"></div>
@@ -463,7 +344,7 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
     </div>
 </div>
 
-{{-- Media Library Modal --}}
+
 <div id="mediaLibraryModal" class="ml-modal-backdrop" dir="ltr">
     <div class="ml-modal-inner">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">
@@ -530,23 +411,34 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
         </div>
     </div>
 </div>
-
+<div id="templatesModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
+    <div style="background:#fff;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);max-width:560px;width:100%;max-height:80vh;display:flex;flex-direction:column;">
+        <div style="padding:20px 24px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <h3 style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#0f1117;">💾 My Templates</h3>
+            <button onclick="closeTemplates()" style="color:#9ca3af;border:none;background:none;cursor:pointer;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:20px 24px;" id="templatesList">
+            <div style="text-align:center;color:#9ca3af;font-size:13px;padding:32px;">Loading...</div>
+        </div>
+    </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js"></script>
 
 <script>
-// ── CSRF Token (مهم جداً) ──────────────────────────────────────────────────
+
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-// ── Page Modal ──────────────────────────────────────────────────────────────
+
 const pageModal = document.getElementById('pageModal');
 document.getElementById('openPageModalBtnQuick')?.addEventListener('click', () => pageModal.classList.replace('hidden','flex'));
 document.getElementById('closePageModalBtn')?.addEventListener('click',   () => pageModal.classList.replace('flex','hidden'));
 document.getElementById('cancelPageModalBtn')?.addEventListener('click',  () => pageModal.classList.replace('flex','hidden'));
 
-// ── Post Type ───────────────────────────────────────────────────────────────
 function setPostType(btn, type) {
     document.querySelectorAll('.post-type-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -554,7 +446,7 @@ function setPostType(btn, type) {
     document.getElementById('mediaSection').style.display = type === 'text' ? 'none' : 'block';
 }
 
-// ── Char Counter ────────────────────────────────────────────────────────────
+
 function updateCharCount(el) {
     const len = el.value.length;
     const counter = document.getElementById('charCounter');
@@ -562,7 +454,7 @@ function updateCharCount(el) {
     counter.className = 'char-counter' + (len > 2000 ? ' warn' : '') + (len > 2200 ? ' over' : '');
 }
 
-// ── Hashtag ─────────────────────────────────────────────────────────────────
+
 function appendHashtag(tag) {
     const ta = document.getElementById('post-content');
     ta.value += (ta.value && !ta.value.endsWith(' ') ? ' ' : '') + tag + ' ';
@@ -570,7 +462,7 @@ function appendHashtag(tag) {
     ta.focus();
 }
 
-// ── Best Time ───────────────────────────────────────────────────────────────
+
 function fillBestTime() {
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
@@ -579,7 +471,7 @@ function fillBestTime() {
     showToast('⚡ Best time set: Today at 6:00 PM');
 }
 
-// ── Draft ────────────────────────────────────────────────────────────────────
+
 function saveDraft() {
     const content = document.getElementById('post-content').value;
     if (!content.trim()) return showToast('⚠️ Write something first!');
@@ -587,7 +479,7 @@ function saveDraft() {
     showToast('✅ Draft saved locally');
 }
 
-// ── Toast ────────────────────────────────────────────────────────────────────
+
 function showToast(msg, duration = 2800) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -595,7 +487,7 @@ function showToast(msg, duration = 2800) {
     setTimeout(() => t.classList.remove('show'), duration);
 }
 
-// ── AI Magic Write ───────────────────────────────────────────────────────────
+
 const aiBtn = document.getElementById('ai-magic-btn');
 const contentTextarea = document.getElementById('post-content');
 const aiLoader = document.getElementById('ai-loader');
@@ -623,12 +515,12 @@ aiBtn?.addEventListener('click', async () => {
         }
 
         if (data.captions && data.captions.length > 0) {
-            // ── عرض الـ captions كـ chips للاختيار ──
+   
             showCaptionPicker(data.captions);
         }
 
         if (data.hashtags && data.hashtags.length > 0) {
-            // ── عرض الهاشتاقات كـ chips ──
+    
             const container = document.getElementById('hashtagSuggestions');
             container.innerHTML = '';
             data.hashtags.forEach(tag => {
@@ -636,7 +528,7 @@ aiBtn?.addEventListener('click', async () => {
                 chip.className = 'ai-suggestion-chip';
                 chip.textContent = tag;
                 chip.onclick = () => {
-                    // toggle — لو مضغوط يشيله، لو لأ يضيفه
+               
                     if (chip.classList.contains('selected-hashtag')) {
                         chip.classList.remove('selected-hashtag');
                         chip.style.background = '';
@@ -697,10 +589,10 @@ document.getElementById('calModal').addEventListener('click', e => { if(e.target
 
 const ML = { page:1, type:'', search:'', selected:null, loading:false, timer:null };
 
-// ── الـ API Helper — مع credentials و CSRF صح ─────────────────────────────
+
 async function mlFetch(url, options = {}) {
     const defaults = {
-        credentials: 'same-origin',          // ← يبعت الـ session cookie
+        credentials: 'same-origin',       
         headers: {
             'X-CSRF-TOKEN': CSRF,
             'Accept': 'application/json',
@@ -1003,9 +895,9 @@ function clearPostMedia() {
     document.getElementById('postMediaUploadArea').style.display = 'flex';
 }
 
-// ── Caption Picker ────────────────────────────────────────────────────────
+
 function showCaptionPicker(captions) {
-    // شيل أي picker قديم
+
     document.getElementById('captionPicker')?.remove();
 
     const picker = document.createElement('div');
@@ -1060,7 +952,7 @@ function showCaptionPicker(captions) {
                 }
             }, 14);
             picker.remove();
-            // reset الهاشتاقات المختارة
+      
             document.querySelectorAll('.selected-hashtag').forEach(el => {
                 el.classList.remove('selected-hashtag');
                 el.style.background = '';
@@ -1071,17 +963,18 @@ function showCaptionPicker(captions) {
         picker.appendChild(btn);
     });
 
-    // أضف الـ picker فوق الـ textarea مباشرة
+   
     const textareaWrapper = contentTextarea.parentElement;
     textareaWrapper.parentElement.insertBefore(picker, textareaWrapper);
 }
 
-// ── Remove Hashtag from content ───────────────────────────────────────────
+
 function removeHashtagFromContent(tag) {
     const ta = document.getElementById('post-content');
     ta.value = ta.value.replace(new RegExp('\\s?' + tag.replace('#', '\\#') + '\\s?', 'g'), ' ').trim();
     updateCharCount(ta);
 }
+
 </script>
 
 </x-app-layout>

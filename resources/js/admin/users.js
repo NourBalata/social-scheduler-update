@@ -5,15 +5,15 @@ const state = {
 
 // DOM Elements
 const elements = {
-    // مودال المشترك (User)
+  
     userModal: document.getElementById('userModal'),
     userForm: document.getElementById('userForm'),
     
-    // مودال الصفحة (Page)
+    
     pageModal: document.getElementById('pageModal'),
     pageForm: document.getElementById('pageForm'),
 
-    // أزرار الفتح
+
     openUserBtn: document.getElementById('openFormBtn'),
     openPageBtns: [
         document.getElementById('openPageModalBtn'),
@@ -30,13 +30,12 @@ function init() {
 }
 
 function bindEvents() {
-    // --- أحداث مودال المشترك ---
+    
     elements.openUserBtn?.addEventListener('click', () => openModal('user'));
     elements.userForm?.addEventListener('submit', (e) => handleAjaxSubmit(e, 'user'));
     document.getElementById('closeModalBtn')?.addEventListener('click', () => closeModal('user'));
     document.getElementById('cancelBtn')?.addEventListener('click', () => closeModal('user'));
 
-    // --- أحداث مودال الصفحة ---
     elements.openPageBtns.forEach(btn => {
         btn?.addEventListener('click', () => openModal('page'));
     });
@@ -44,7 +43,7 @@ function bindEvents() {
     document.getElementById('closePageModalBtn')?.addEventListener('click', () => closeModal('page'));
     document.getElementById('cancelPageBtn')?.addEventListener('click', () => closeModal('page'));
 
-    // --- أحداث عامة ---
+   
     elements.searchInput?.addEventListener('input', handleSearch);
 
     window.addEventListener('click', (e) => {
@@ -60,7 +59,6 @@ function bindEvents() {
     });
 }
 
-// دالة فتح المودال الموحدة
 function openModal(type) {
     const modal = type === 'user' ? elements.userModal : elements.pageModal;
     if (modal) {

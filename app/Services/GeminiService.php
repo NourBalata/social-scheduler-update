@@ -12,14 +12,14 @@ class GeminiService
 
     public function generate(string $prompt): string
     {
-        // جرب Gemini أولاً
+    
         try {
             return $this->tryGemini($prompt);
         } catch (\Exception $e) {
             Log::warning('Gemini failed, switching to Groq: ' . $e->getMessage());
         }
 
-        // إذا Gemini فشل — جرب Groq
+
         try {
             return $this->tryGroq($prompt);
         } catch (\Exception $e) {
