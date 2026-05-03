@@ -122,4 +122,36 @@ class FacebookProvider implements SocialMediaProvider
 
         return $response->successful();
     }
+
+
+    public function syncAccount(User $user, string $code): int
+{
+    return DB::transaction(function () use ($user, $code) {
+        $tokenData = $this->getAccessToken($code);
+        $longLived = $this->getLongLivedToken($tokenData['access_token']);
+        
+        $account = $user->facebookAccounts()->updateOrCreate(
+            ['facebook_id' => $tokenData['user_id']],
+            [
+                'name' => $tokenData['name'] ?? 'Facebook User',
+                'access_token' => encrypt($longLived['access_token']),
+                'token_expires_at' => $longLived['expires_at'],
+            ]
+        );
+
+        $pages = $this->getUserPages($longLived['access_token']);
+        foreach ($pages as $page) {
+            $user->facebookPages()->updateOrCreate(
+                ['page_id' => (string) $page['id']],
+                [
+                    'page_name' => $page['name'],
+                    'facebook_account_id' => $account->id,
+                    'access_token' => encrypt($page['access_token']),
+                    'is_active' => true,
+                ]
+            );
+        }
+        return count($pages);
+    });
+}
 }
