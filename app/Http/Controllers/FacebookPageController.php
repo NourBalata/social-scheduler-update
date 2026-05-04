@@ -21,7 +21,7 @@ class FacebookPageController extends Controller
         auth()->user()->facebookPages()->create([
             'page_id'          => $request->page_id,
             'page_name'        => $request->page_name,
-            'access_token'     => encrypt($request->page_access_token),
+            'access_token'     => $request->page_access_token,
             'is_active'        => true,
             'token_expires_at' => now()->addDays(60),
         ]);

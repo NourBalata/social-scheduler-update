@@ -104,7 +104,7 @@ class FacebookService implements SocialMediaProvider
         $mediaType = null;
         $mediaPath = null;
 
-        // استخرج الـ media من array أو string
+   
         if (!empty($data['media'])) {
             if (is_array($data['media']) && isset($data['media'][0])) {
                 $mediaType = $data['media'][0]['type'] ?? null;
@@ -115,7 +115,7 @@ class FacebookService implements SocialMediaProvider
             }
         }
 
-        // نشر فيديو
+
         if ($mediaType === 'video' && $mediaPath) {
             $localPath = Storage::disk('public')->path($mediaPath);
 
@@ -132,7 +132,7 @@ class FacebookService implements SocialMediaProvider
             return $this->publishVideoResumable($token, $pageId, $localPath, $data['content'] ?? '');
         }
 
-        // نشر صورة
+        
         if ($mediaType === 'image' && $mediaPath) {
             $localPath = Storage::disk('public')->path($mediaPath);
 
@@ -156,7 +156,7 @@ class FacebookService implements SocialMediaProvider
             return (string) ($response->json('id') ?? $response->json('post_id'));
         }
 
-        // نشر نص فقط
+    
         $response = Http::timeout(30)->post("{$this->baseUrl}/{$pageId}/feed", [
             'message'      => $data['content'] ?? '',
             'access_token' => $token,
@@ -171,15 +171,12 @@ class FacebookService implements SocialMediaProvider
         return (string) ($response->json('id') ?? $response->json('post_id'));
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Resumable Video Upload — للفيديوهات الكبيرة بدون timeout
-    // ─────────────────────────────────────────────────────────────────────────
+  
     protected function publishVideoResumable(string $token, string $pageId, string $localPath, string $description): string
     {
         $fileSize  = filesize($localPath);
-        $chunkSize = 5 * 1024 * 1024; // 5MB لكل chunk
+        $chunkSize = 5 * 1024 * 1024; 
 
-        // ── الخطوة 1: Start ──────────────────────────────────────────────────
         $startResponse = Http::timeout(30)->post("{$this->videoBaseUrl}/{$pageId}/videos", [
             'upload_phase'  => 'start',
             'file_size'     => $fileSize,
@@ -203,7 +200,7 @@ class FacebookService implements SocialMediaProvider
             'end'         => $endOffset,
         ]);
 
-        // ── الخطوة 2: Transfer (chunks) ──────────────────────────────────────
+      
         $handle = fopen($localPath, 'rb');
 
         while ($startOffset < $fileSize) {
@@ -240,7 +237,7 @@ class FacebookService implements SocialMediaProvider
 
         fclose($handle);
 
-        // ── الخطوة 3: Finish ─────────────────────────────────────────────────
+       
         $finishResponse = Http::timeout(60)->post("{$this->videoBaseUrl}/{$pageId}/videos", [
             'upload_phase'      => 'finish',
             'upload_session_id' => $uploadSessionId,

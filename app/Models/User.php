@@ -100,4 +100,9 @@ class User extends Authenticatable
 
         return $this->facebookPages()->count() < $this->currentPlan->pages_limit;
     }
+
+    public function contentPlans()
+{
+    return $this->hasMany(ContentPlan::class);
+}
 }

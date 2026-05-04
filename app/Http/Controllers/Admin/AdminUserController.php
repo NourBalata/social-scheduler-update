@@ -14,13 +14,13 @@ class AdminUserController extends Controller
     /**
      * Admin dashboard — list of all non-admin users and plans.
      */
-    public function index()
-    {
-        $users = User::with('currentPlan')->where('is_admin', false)->get();
-        $plans = Plan::all();
+public function index()
+{
+    $users = User::with('currentPlan')->where('is_admin', false)->get();
+    $plans = Plan::all();
 
-        return view('admin.dashboard', compact('users', 'plans'));
-    }
+    return view('admin.dashboard', compact('users', 'plans'));
+}
 
     /**
      * Create a new subscriber account, optionally with a linked Facebook page.

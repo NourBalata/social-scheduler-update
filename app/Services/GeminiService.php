@@ -10,18 +10,18 @@ class GeminiService
     private string $geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
     private static array $failedKeys = [];
 
-    public function generate(string $prompt): string
+    // $jsonMode = true  → يرجع JSON (للكابشن والهاشتاق)
+    // $jsonMode = false → يرجع نص حر (للأوتوبايلوت)
+    public function generate(string $prompt, bool $jsonMode = true): string
     {
-    
         try {
-            return $this->tryGemini($prompt);
+            return $this->tryGemini($prompt, $jsonMode);
         } catch (\Exception $e) {
             Log::warning('Gemini failed, switching to Groq: ' . $e->getMessage());
         }
 
-
         try {
-            return $this->tryGroq($prompt);
+            return $this->tryGroq($prompt, $jsonMode);
         } catch (\Exception $e) {
             Log::error('Groq also failed: ' . $e->getMessage());
         }
@@ -29,7 +29,7 @@ class GeminiService
         throw new \Exception('rate_limit_exceeded');
     }
 
-    private function tryGemini(string $prompt): string
+    private function tryGemini(string $prompt, bool $jsonMode): string
     {
         $keys = array_filter(config('services.gemini.keys', []));
 
@@ -37,10 +37,20 @@ class GeminiService
             if (in_array($key, self::$failedKeys)) continue;
 
             try {
-                $response = Http::timeout(20)->post("{$this->geminiUrl}?key={$key}", [
+                $body = [
                     'contents'         => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => ['response_mime_type' => 'application/json'],
-                ]);
+                    'generationConfig' => [
+                        'maxOutputTokens' => 8192,
+                        'temperature'     => 0.8,
+                    ],
+                ];
+
+                // فقط للكابشن نجبر JSON format
+                if ($jsonMode) {
+                    $body['generationConfig']['response_mime_type'] = 'application/json';
+                }
+
+                $response = Http::timeout(60)->post("{$this->geminiUrl}?key={$key}", $body);
 
                 if ($response->successful()) {
                     return $response->json('candidates.0.content.parts.0.text') ?? '';
@@ -61,19 +71,24 @@ class GeminiService
         throw new \Exception('gemini_exhausted');
     }
 
-    private function tryGroq(string $prompt): string
+    private function tryGroq(string $prompt, bool $jsonMode): string
     {
-        $response = Http::timeout(15)
+        $body = [
+            'model'       => 'llama-3.3-70b-versatile',
+            'messages'    => [['role' => 'user', 'content' => $prompt]],
+            'max_tokens'  => 8192,
+        ];
+
+        if ($jsonMode) {
+            $body['response_format'] = ['type' => 'json_object'];
+        }
+
+        $response = Http::timeout(30)
             ->withHeaders([
                 'Authorization' => 'Bearer ' . config('services.groq.key'),
                 'Content-Type'  => 'application/json',
             ])
-            ->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model'           => 'llama-3.3-70b-versatile',
-                'messages'        => [['role' => 'user', 'content' => $prompt]],
-                'max_tokens'      => 800,
-                'response_format' => ['type' => 'json_object'],
-            ]);
+            ->post('https://api.groq.com/openai/v1/chat/completions', $body);
 
         if ($response->successful()) {
             return $response->json('choices.0.message.content') ?? '';
