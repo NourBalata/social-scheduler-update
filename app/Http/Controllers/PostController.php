@@ -93,7 +93,7 @@ class PostController extends Controller
         $csv->setCsvControl(',');
 
         foreach ($csv as $index => $cols) {
-            if ($index === 0) continue; // skip header
+            if ($index === 0) continue; 
             if (! is_array($cols) || count($cols) < 3) continue;
 
             [$pageName, $content, $scheduledAt] = array_map('trim', $cols);
@@ -140,7 +140,6 @@ class PostController extends Controller
             ->withErrors($errors);
     }
 
-    // ─── Private Helpers ──────────────────────────────────────────────────────
 
     private function resolveMedia(Request $request, int $userId): ?array
     {

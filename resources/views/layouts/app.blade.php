@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }}</title>
     
-    @vite(['resources/css/app.css','resources/css/admin.css','resources/css/subsciber.css','resources/js/app.js','resources/js/INDEX.JS'])
+    @vite(['resources/css/app.css','resources/css/admin.css','resources/css/subsciber.css','resources/js/app.js','resources/css/subscriber.css','resources/js/INDEX.JS','resources/js/admin/user.js','resources/js/admin/admin.js'])
 </head>
 <body class="bg-gray-50 font-sans antialiased">
     <div class="min-h-screen">

@@ -1,201 +1,120 @@
-// State Management
-const state = {
-    isLoading: false,
-};
+let currentPlanId = null;
 
-// DOM Elements
-const elements = {
+function openPayModal(planName, planPrice, planId) {
+    currentPlanId = planId;
+    
+    // حط البيانات
+    document.getElementById('pay-plan-name').textContent  = planName + ' Plan';
+    document.getElementById('pay-plan-price-big').textContent = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-summary-label').textContent  = planName + ' Plan — monthly';
+    document.getElementById('pay-summary-price').textContent  = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-subtotal').textContent       = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-total').textContent          = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-btn-price').textContent      = '$' + parseFloat(planPrice).toFixed(2);
+
   
-    userModal: document.getElementById('userModal'),
-    userForm: document.getElementById('userForm'),
-    
-    
-    pageModal: document.getElementById('pageModal'),
-    pageForm: document.getElementById('pageForm'),
-
-
-    openUserBtn: document.getElementById('openFormBtn'),
-    openPageBtns: [
-        document.getElementById('openPageModalBtn'),
-        document.getElementById('openPageModalBtnQuick')
-    ],
-
-    // عناصر الجدول والبحث
-    tableBody: document.getElementById('userTableBody'),
-    searchInput: document.getElementById('searchInput'),
-};
-
-function init() {
-    bindEvents();
+    closeUpgradeModal();
+    document.getElementById('pay-error').style.display = 'none';
+    document.getElementById('pay-card-number').value = '';
+    document.getElementById('pay-expiry').value = '';
+    document.getElementById('pay-cvc').value = '';
+    document.getElementById('pay-name').value = '';
+    document.getElementById('payModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-function bindEvents() {
-    
-    elements.openUserBtn?.addEventListener('click', () => openModal('user'));
-    elements.userForm?.addEventListener('submit', (e) => handleAjaxSubmit(e, 'user'));
-    document.getElementById('closeModalBtn')?.addEventListener('click', () => closeModal('user'));
-    document.getElementById('cancelBtn')?.addEventListener('click', () => closeModal('user'));
-
-    elements.openPageBtns.forEach(btn => {
-        btn?.addEventListener('click', () => openModal('page'));
-    });
-    elements.pageForm?.addEventListener('submit', (e) => handleAjaxSubmit(e, 'page'));
-    document.getElementById('closePageModalBtn')?.addEventListener('click', () => closeModal('page'));
-    document.getElementById('cancelPageBtn')?.addEventListener('click', () => closeModal('page'));
-
-   
-    elements.searchInput?.addEventListener('input', handleSearch);
-
-    window.addEventListener('click', (e) => {
-        if (e.target === elements.userModal) closeModal('user');
-        if (e.target === elements.pageModal) closeModal('page');
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeModal('user');
-            closeModal('page');
-        }
-    });
+function closePayModal() {
+    document.getElementById('payModal').style.display = 'none';
+    document.body.style.overflow = '';
 }
 
-function openModal(type) {
-    const modal = type === 'user' ? elements.userModal : elements.pageModal;
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
+document.getElementById('payModal').addEventListener('click', function(e) {
+    if (e.target === this) closePayModal();
+});
+
+function formatCardNumber(input) {
+    let val = input.value.replace(/\D/g, '').substring(0, 16);
+    input.value = val.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+    let val = input.value.replace(/\D/g, '').substring(0, 4);
+    if (val.length >= 2) val = val.substring(0,2) + ' / ' + val.substring(2);
+    input.value = val;
+}
+
+async function submitPayment() {
+    const cardNumber = document.getElementById('pay-card-number').value.replace(/\s/g,'');
+    const expiry     = document.getElementById('pay-expiry').value;
+    const cvc        = document.getElementById('pay-cvc').value;
+    const name       = document.getElementById('pay-name').value.trim();
+    const email      = document.getElementById('pay-email').value.trim();
+    const errEl      = document.getElementById('pay-error');
+
+    if (!email || !cardNumber || !expiry || !cvc || !name) {
+        errEl.textContent = 'Please fill in all fields.';
+        errEl.style.display = 'block';
+        return;
     }
-}
-
-// دالة إغلاق المودال الموحدة
-function closeModal(type) {
-    const modal = type === 'user' ? elements.userModal : elements.pageModal;
-    const form = type === 'user' ? elements.userForm : elements.pageForm;
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = '';
-        form?.reset();
-        clearErrors(form);
+    if (cardNumber.length < 16) {
+        errEl.textContent = 'Please enter a valid card number.';
+        errEl.style.display = 'block';
+        return;
     }
-}
+    if (cvc.length < 3) {
+        errEl.textContent = 'Please enter a valid CVC.';
+        errEl.style.display = 'block';
+        return;
+    }
 
-// دالة الإرسال الموحدة (Ajax)
-async function handleAjaxSubmit(e, type) {
-    e.preventDefault();
-    if (state.isLoading) return;
+    errEl.style.display = 'none';
 
-    const form = type === 'user' ? elements.userForm : elements.pageForm;
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const isPage = type === 'page';
-
-    clearErrors(form);
-    setLoading(true, submitBtn, isPage);
-
-    const formData = new FormData(form);
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || formData.get('_token');
+    const btn     = document.getElementById('pay-submit-btn');
+    const btnText = document.getElementById('pay-btn-text');
+    const spinner = document.getElementById('pay-spinner');
+    btn.disabled          = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
 
     try {
-        const response = await fetch(form.action, {
+        const res = await fetch(`/billing/fake-checkout/${currentPlanId}`, {
             method: 'POST',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': token
+                'Content-Type':  'application/json',
+                'X-CSRF-TOKEN':  document.querySelector('meta[name="csrf-token"]').content,
+                'Accept':        'application/json',
             },
-            body: formData
+            credentials: 'same-origin',
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (response.status === 422) {
-            handleValidationErrors(data.errors, form);
-            return;
+        if (data.success) {
+            closePayModal();
+            showToast('✅ Plan activated! Refreshing...');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            throw new Error(data.message ?? 'Failed');
         }
 
-        if (!response.ok) throw new Error(data.message || 'حدث خطأ في النظام');
-
-        showNotification(isPage ? 'تم إضافة الصفحة بنجاح' : 'تم إضافة المشترك بنجاح');
-        setTimeout(() => location.reload(), 1000);
-        closeModal(type);
-
-    } catch (error) {
-        showNotification(error.message, 'error');
-    } finally {
-        setLoading(false, submitBtn, isPage);
+    } catch(e) {
+        btn.disabled          = false;
+        btnText.style.display = 'inline';
+        spinner.style.display = 'none';
+        errEl.textContent     = e.message || 'Something went wrong.';
+        errEl.style.display   = 'block';
     }
 }
-
-function handleValidationErrors(errors, form) {
-    Object.keys(errors).forEach(field => {
-        const errorElement = form.querySelector(`[data-field="${field}"]`);
-        const input = form.querySelector(`[name="${field}"]`);
-        if (errorElement) {
-            errorElement.textContent = errors[field][0];
-            errorElement.classList.remove('hidden');
-        }
-        if (input) input.classList.add('border-red-500');
-    });
-}
-
-function clearErrors(form) {
-    if (!form) return;
-    form.querySelectorAll('.error-msg').forEach(el => el.classList.add('hidden'));
-    form.querySelectorAll('input, select').forEach(input => input.classList.remove('border-red-500'));
-}
-
-function setLoading(loading, btn, isPage) {
-    state.isLoading = loading;
-    if (!btn) return;
-    btn.disabled = loading;
-    const textSpan = btn.querySelector('span:not(.animate-spin)');
-    const loader = btn.querySelector('.animate-spin');
-    
-    if (textSpan) textSpan.textContent = loading ? 'جاري الحفظ...' : (isPage ? 'حفظ الصفحة' : 'حفظ المشترك');
-    loading ? loader?.classList.remove('hidden') : loader?.classList.add('hidden');
-}
-
-function handleSearch(e) {
-    const query = e.target.value.toLowerCase();
-    const rows = elements.tableBody?.querySelectorAll('tr[data-user-id]');
-    rows?.forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
-    });
-}
-
-function showNotification(message, type = 'success') {
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({ toast: true, position: 'top-start', icon: type, title: message, showConfirmButton: false, timer: 3000 });
-    } else {
-        alert(message);
-    }
-}
-
-init();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
+// Page Modal
 const pageModal = document.getElementById('pageModal');
 document.getElementById('openPageModalBtnQuick')?.addEventListener('click', () => pageModal.classList.replace('hidden','flex'));
 document.getElementById('closePageModalBtn')?.addEventListener('click',   () => pageModal.classList.replace('flex','hidden'));
 document.getElementById('cancelPageModalBtn')?.addEventListener('click',  () => pageModal.classList.replace('flex','hidden'));
 
-
+// Post Form Helpers
 function setPostType(btn, type) {
     document.querySelectorAll('.post-type-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -218,13 +137,13 @@ function fillBestTime() {
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
     document.getElementById('scheduled_at').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T18:00`;
-    showToast('Best time set: Today at 6:00 PM');
+    showToast('⚡ Best time set: Today at 6:00 PM');
 }
 function saveDraft() {
     const content = document.getElementById('post-content').value;
-    if (!content.trim()) return showToast('Write something first!');
+    if (!content.trim()) return showToast('⚠️ Write something first!');
     localStorage.setItem('postflow_draft', content);
-    showToast('Draft saved locally');
+    showToast('✅ Draft saved locally');
 }
 function showToast(msg, duration = 2800) {
     const t = document.getElementById('toast');
@@ -238,7 +157,7 @@ function removeHashtagFromContent(tag) {
     updateCharCount(ta);
 }
 
-
+// Magic Write
 const aiBtn = document.getElementById('ai-magic-btn');
 const contentTextarea = document.getElementById('post-content');
 const aiLoader = document.getElementById('ai-loader');
@@ -264,7 +183,7 @@ aiBtn?.addEventListener('click', async () => {
                 container.appendChild(chip);
             });
         }
-    } catch(e) { showToast('AI connection failed'); }
+    } catch(e) { showToast('❌ AI connection failed'); }
     finally { aiBtn.disabled = false; aiLoader.style.display = 'none'; }
 });
 function showCaptionPicker(captions) {
@@ -274,7 +193,7 @@ function showCaptionPicker(captions) {
     picker.style.cssText = 'background:#f8faff;border:1.5px solid #bfdbfe;border-radius:14px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;';
     const title = document.createElement('p');
     title.style.cssText = 'font-size:11px;font-weight:700;color:#4f46e5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;';
-    title.textContent = 'Choose a caption:'; picker.appendChild(title);
+    title.textContent = '✨ Choose a caption:'; picker.appendChild(title);
     captions.forEach((caption,i) => {
         const btn = document.createElement('button'); btn.type='button';
         btn.style.cssText = 'text-align:left;padding:10px 14px;border-radius:10px;border:1.5px solid #e0e7ff;background:#fff;font-size:13px;color:#374151;cursor:pointer;line-height:1.5;';
@@ -289,10 +208,10 @@ function showCaptionPicker(captions) {
     contentTextarea.parentElement.parentElement.insertBefore(picker, contentTextarea.parentElement);
 }
 
-
+// Calendar
 const typeColors = { educational:'#8b5cf6', promotional:'#f59e0b', entertainment:'#ec4899', engagement:'#06b6d4', manual:'#3b82f6' };
 
-const events = window.events;
+const events = @json($events);
 document.getElementById('stat-scheduled').textContent = events.filter(e => e.extendedProps?.status === 'pending').length;
 document.getElementById('stat-published').textContent = events.filter(e => e.extendedProps?.status === 'published').length;
 
@@ -337,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function closeCalModal() { document.getElementById('calModal').classList.replace('flex','hidden'); }
 document.getElementById('calModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeCalModal(); });
 
-
+// Autopilot Modal
 let apGeneratedPosts = [];
 let apSelectedTone   = 'friendly';
 
@@ -414,14 +333,14 @@ async function startAutopilot() {
 }
 
 function renderApPreview(posts, pageName) {
-    const typeEmoji  = { educational:, promotional:, entertainment:, engagement: };
+    const typeEmoji  = { educational:'📚', promotional:'🛍️', entertainment:'🎉', engagement:'💬' };
     const typeColors2 = { educational:'#8b5cf6', promotional:'#f59e0b', entertainment:'#ec4899', engagement:'#06b6d4' };
-    document.getElementById('ap-summary').innerHTML = `Generated <strong>${posts.length}</strong> posts for page <strong>${pageName}</strong> — review the content before scheduling.`;
+    document.getElementById('ap-summary').innerHTML = `✅ Generated <strong>${posts.length}</strong> posts for page <strong>${pageName}</strong> — review the content before scheduling.`;
     const container = document.getElementById('ap-posts-preview');
     container.innerHTML = '';
     posts.forEach((p, i) => {
         const color = typeColors2[p.post_type] || '#6b7280';
-        const emoji = typeEmoji[p.post_type]   ;
+        const emoji = typeEmoji[p.post_type]   || '📝';
         const div = document.createElement('div');
         div.style.cssText = `background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px 14px;`;
         div.innerHTML = `
@@ -464,11 +383,11 @@ async function confirmAutopilot() {
     } catch(e) {
         btn.disabled = false;
         btn.innerHTML = 'Schedule All Now';
-        showToast('Save failed, please try again.');
+        showToast('❌ Save failed, please try again.');
     }
 }
 
-
+// Date Click Modal
 let dcSelectedDate = '';
 let dcSelectedType = 'educational';
 
@@ -575,7 +494,7 @@ async function saveDcPost() {
         if (calendarInstance && data.event) {
             calendarInstance.addEvent(data.event);
         }
-        showToast('Post scheduled successfully!');
+        showToast('✅ Post scheduled successfully!');
         closeDateClickModal();
 
     } catch(e) {
@@ -647,6 +566,3 @@ function mlDrop(e){e.preventDefault();mlDragLeave();mlUploadFiles(e.dataTransfer
 function handleDirectUpload(input){if(!input.files?.[0])return;document.getElementById('mediaLibraryId').value='';const file=input.files[0];showPostMediaPreview(URL.createObjectURL(file),file.name,file.type.startsWith('video')?'video':'image');}
 function showPostMediaPreview(url,name,type){document.getElementById('postMediaUploadArea').style.display='none';document.getElementById('postMediaPreview').style.display='block';const img=document.getElementById('postMediaPreviewImg');const vid=document.getElementById('postMediaPreviewVid');img.style.display='none';vid.style.display='none';if(type==='video'){vid.src=url;vid.style.display='block';}else{img.src=url;img.style.display='block';}document.getElementById('postMediaPreviewName').textContent=name;}
 function clearPostMedia(){document.getElementById('media').value='';document.getElementById('mediaLibraryId').value='';document.getElementById('postMediaPreviewImg').src='';document.getElementById('postMediaPreviewVid').src='';document.getElementById('postMediaPreview').style.display='none';document.getElementById('postMediaUploadArea').style.display='flex';}
-
-
-

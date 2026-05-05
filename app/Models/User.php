@@ -19,6 +19,11 @@ class User extends Authenticatable
         'plan_id',
         'is_admin',
         'plan_expires_at',
+        // Stripe ↓
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'stripe_price_id',
+        'stripe_status',
     ];
 
     protected $with = ['currentPlan', 'facebookPages'];
@@ -54,6 +59,16 @@ class User extends Authenticatable
         return $this->hasMany(ScheduledPost::class);
     }
 
+    public function contentPlans(): HasMany
+    {
+        return $this->hasMany(ContentPlan::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(SubscriptionInvoice::class)->latest();
+    }
+
     // ─── Plan Helpers ─────────────────────────────────────────────────────────
 
     public function hasActivePlan(): bool
@@ -62,11 +77,22 @@ class User extends Authenticatable
             return false;
         }
 
-        if ($this->plan_expires_at?->isPast()) {
-            return false;
+        // الخطة المجانية دايماً نشطة
+        if ($this->currentPlan?->isFree()) {
+            return true;
         }
 
-        return true;
+        // للخطط المدفوعة: نتحقق من Stripe status + انتهاء الفترة
+        if ($this->stripe_status === 'active' || $this->stripe_status === 'trialing') {
+            return true;
+        }
+
+        // fallback على plan_expires_at للخطط اليدوية (admin)
+        if ($this->plan_expires_at?->isFuture()) {
+            return true;
+        }
+
+        return false;
     }
 
     public function canSchedulePost(): bool
@@ -101,8 +127,21 @@ class User extends Authenticatable
         return $this->facebookPages()->count() < $this->currentPlan->pages_limit;
     }
 
-    public function contentPlans()
-{
-    return $this->hasMany(ContentPlan::class);
-}
+    // ─── Stripe Helpers ───────────────────────────────────────────────────────
+
+    public function hasStripeCustomer(): bool
+    {
+        return ! empty($this->stripe_customer_id);
+    }
+
+    public function hasActiveStripeSubscription(): bool
+    {
+        return ! empty($this->stripe_subscription_id)
+            && in_array($this->stripe_status, ['active', 'trialing']);
+    }
+
+    public function stripeSubscriptionIsPastDue(): bool
+    {
+        return $this->stripe_status === 'past_due';
+    }
 }

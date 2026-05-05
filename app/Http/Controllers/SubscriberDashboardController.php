@@ -6,9 +6,7 @@ use Illuminate\Support\Str;
 
 class SubscriberDashboardController extends Controller
 {
-    /**
-     * Subscriber dashboard — calendar events and connected pages.
-     */
+   
     public function index()
     {
         $user   = auth()->user();

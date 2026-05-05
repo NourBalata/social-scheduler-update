@@ -24,7 +24,6 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
 @keyframes blobFloat { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(30px,-20px) scale(1.05);} 66%{transform:translate(-20px,15px) scale(0.97);} }
 
 .dash-wrap { position:relative; z-index:1; max-width:1280px; margin:0 auto; padding:32px 24px; }
-
 .dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
 .dash-header .brand { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; background:linear-gradient(135deg,var(--blue),#7c3aed); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px; }
 .user-chip { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--steel); padding:8px 14px 8px 8px; border-radius:40px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
@@ -121,3 +120,23 @@ h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
 .fc .fc-button { font-family:'DM Sans',sans-serif !important; font-weight:600 !important; border-radius:8px !important; }
 .fc .fc-button-primary { background:#2563eb !important; border-color:#2563eb !important; }
 .fc .fc-day-today { background:#eff6ff !important; }
+
+
+.ap-tone-btn {
+    padding: 10px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    background: #fff;
+    transition: all .15s;
+    text-align: center;
+}
+.ap-tone-btn.active {
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+

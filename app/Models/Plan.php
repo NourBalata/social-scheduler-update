@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
@@ -12,21 +13,35 @@ class Plan extends Model
         'price',
         'posts_limit',
         'pages_limit',
-        'active'
+        'active',
+        'stripe_price_id',   // ← جديد
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'price'  => 'decimal:2',
         'active' => 'boolean',
     ];
 
-    public function users()
+    // ─── Relationships ────────────────────────────────────────────────────────
+
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function isFree()
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(SubscriptionInvoice::class);
+    }
+
+
+    public function isFree(): bool
     {
         return $this->price == 0;
+    }
+
+    public function hasStripePrice(): bool
+    {
+        return ! empty($this->stripe_price_id);
     }
 }

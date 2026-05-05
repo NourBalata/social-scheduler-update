@@ -3,14 +3,15 @@
 namespace App\Services\Social;
 
 use App\Contracts\SocialMediaProvider;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class FacebookProvider implements SocialMediaProvider
 {
-    private string $graphUrl      = 'https://graph.facebook.com/v19.0';
-    private string $dialogUrl     = 'https://www.facebook.com/v19.0/dialog/oauth';
-
+    private string $graphUrl  = 'https://graph.facebook.com/v20.0';
+    private string $dialogUrl = 'https://www.facebook.com/v20.0/dialog/oauth';
 
     public function getAuthUrl(): string
     {
@@ -62,8 +63,6 @@ class FacebookProvider implements SocialMediaProvider
         ];
     }
 
-
-
     public function getUserPages(string $userToken): array
     {
         $response = Http::get("{$this->graphUrl}/me/accounts", [
@@ -79,13 +78,11 @@ class FacebookProvider implements SocialMediaProvider
         return $response->json('data') ?? [];
     }
 
-
-
     public function post(string $token, string $pageId, array $data): string
     {
         $endpoint = "{$this->graphUrl}/{$pageId}/feed";
         $payload  = [
-            'message'      => $data['content'] ?? '',
+            'message'      => $data['content'] ?? $data['message'] ?? '',
             'access_token' => $token,
         ];
 
@@ -112,8 +109,6 @@ class FacebookProvider implements SocialMediaProvider
         return (string) ($response->json('id') ?? $response->json('post_id') ?? '');
     }
 
-
-
     public function validateToken(string $token): bool
     {
         $response = Http::get("{$this->graphUrl}/me", [
@@ -123,35 +118,36 @@ class FacebookProvider implements SocialMediaProvider
         return $response->successful();
     }
 
-
     public function syncAccount(User $user, string $code): int
-{
-    return DB::transaction(function () use ($user, $code) {
-        $tokenData = $this->getAccessToken($code);
-        $longLived = $this->getLongLivedToken($tokenData['access_token']);
-        
-        $account = $user->facebookAccounts()->updateOrCreate(
-            ['facebook_id' => $tokenData['user_id']],
-            [
-                'name' => $tokenData['name'] ?? 'Facebook User',
-                'access_token' => encrypt($longLived['access_token']),
-                'token_expires_at' => $longLived['expires_at'],
-            ]
-        );
+    {
+        return DB::transaction(function () use ($user, $code) {
+            $tokenData = $this->getAccessToken($code);
+            $longLived = $this->getLongLivedToken($tokenData['access_token']);
 
-        $pages = $this->getUserPages($longLived['access_token']);
-        foreach ($pages as $page) {
-            $user->facebookPages()->updateOrCreate(
-                ['page_id' => (string) $page['id']],
+            $account = $user->facebookAccounts()->updateOrCreate(
+                ['facebook_id' => $tokenData['user_id'] ?? $user->id],
                 [
-                    'page_name' => $page['name'],
-                    'facebook_account_id' => $account->id,
-                    'access_token' => encrypt($page['access_token']),
-                    'is_active' => true,
+                    'name'             => $tokenData['name'] ?? 'Facebook User',
+                    'access_token'     => encrypt($longLived['access_token']),
+                    'token_expires_at' => $longLived['expires_at'],
                 ]
             );
-        }
-        return count($pages);
-    });
-}
+
+            $pages = $this->getUserPages($longLived['access_token']);
+
+            foreach ($pages as $page) {
+                $user->facebookPages()->updateOrCreate(
+                    ['page_id' => (string) $page['id']],
+                    [
+                        'page_name'           => $page['name'],
+                        'facebook_account_id' => $account->id,
+                        'access_token'        => encrypt($page['access_token']),
+                        'is_active'           => true,
+                    ]
+                );
+            }
+
+            return count($pages);
+        });
+    }
 }

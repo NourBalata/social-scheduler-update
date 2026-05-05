@@ -21,6 +21,59 @@
     </div>
 </x-slot>
 
+@php
+    $user         = auth()->user();
+    $plan         = $user->currentPlan;
+    $isFree       = $plan?->isFree() ?? true;
+    $isActive     = $user->hasActivePlan();
+    $isPastDue    = $user->stripeSubscriptionIsPastDue();
+    $isExpired    = !$isActive && !$isFree;
+
+    $daysLeft     = null;
+    $expiringSoon = false;
+    if ($user->plan_expires_at) {
+        $daysLeft     = (int) now()->diffInDays($user->plan_expires_at, false);
+        $expiringSoon = $daysLeft >= 0 && $daysLeft <= 5;
+    }
+
+    $postsLimit   = $plan?->posts_limit ?? 0;
+    $postsUsed    = $postsLimit > 0 ? $postsLimit - $user->remainingPostsCount() : 0;
+    $postsPercent = $postsLimit > 0 ? min(100, round($postsUsed / $postsLimit * 100)) : 0;
+    $postsBarColor = $postsPercent >= 90 ? '#ef4444' : ($postsPercent >= 70 ? '#f59e0b' : '#10b981');
+
+    $statusColor = match(true) {
+        $isPastDue    => ['bg'=>'#fff3cd','text'=>'#856404','dot'=>'#f59e0b'],
+        $isExpired    => ['bg'=>'#fee2e2','text'=>'#991b1b','dot'=>'#ef4444'],
+        $expiringSoon => ['bg'=>'#fff3cd','text'=>'#856404','dot'=>'#f59e0b'],
+        $isActive     => ['bg'=>'#d1fae5','text'=>'#065f46','dot'=>'#10b981'],
+        default       => ['bg'=>'#f3f4f6','text'=>'#6b7280','dot'=>'#9ca3af'],
+    };
+    $statusLabel = match(true) {
+        $isPastDue    => 'Payment Failed',
+        $isExpired    => 'Expired',
+        $expiringSoon => "Expires in {$daysLeft}d",
+        $isFree       => 'Free Plan',
+        $isActive     => 'Active',
+        default       => 'Inactive',
+    };
+
+    // Auto-show upgrade modal?
+    $autoShowUpgrade = false;
+    $autoUpgradeReason = '';
+    if ($isExpired && !$isPastDue) {
+        $autoShowUpgrade   = true;
+        $autoUpgradeReason = 'expired';
+    } elseif ($user->remainingPostsCount() === 0 && !$isFree && $isActive) {
+        $autoShowUpgrade   = true;
+        $autoUpgradeReason = 'limit';
+    } elseif ($isFree && session('show_upgrade')) {
+        $autoShowUpgrade   = true;
+        $autoUpgradeReason = 'free_limit';
+    }
+
+    $paidPlans = \App\Models\Plan::where('active', true)->where('price', '>', 0)->orderBy('price')->get();
+@endphp
+
 <div style="position:relative;min-height:100vh;">
     <div class="dash-bg">
         <div class="blob blob-1"></div>
@@ -44,7 +97,7 @@
                     <svg width="22" height="22" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </div>
                 <div>
-                    <div class="stat-num">{{ auth()->user()->remainingPostsCount() }}</div>
+                    <div class="stat-num">{{ $user->remainingPostsCount() }}</div>
                     <div class="stat-label">Remaining Posts</div>
                 </div>
             </div>
@@ -53,7 +106,7 @@
                     <svg width="22" height="22" fill="#10b981" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                 </div>
                 <div>
-                    <div class="stat-num">{{ auth()->user()->facebookPages->count() }}</div>
+                    <div class="stat-num">{{ $user->facebookPages->count() }}</div>
                     <div class="stat-label">Linked Pages</div>
                 </div>
             </div>
@@ -77,6 +130,134 @@
             </div>
         </div>
 
+        {{-- ═══════════════ SUBSCRIPTION CARD ═══════════════ --}}
+        <div class="sub-card" id="subscriptionCard">
+
+            {{-- Header Row --}}
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin:0;">Current Plan</p>
+                        <p style="font-size:16px;font-weight:800;color:#111827;margin:0;font-family:'Syne',sans-serif;">
+                            {{ $plan?->name ?? 'No Plan' }}
+                            @if(!$isFree && $plan)
+                                <span style="font-size:13px;font-weight:600;color:#6b7280;">— ${{ number_format($plan->price, 0) }}/mo</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Status Badge --}}
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:700;background:{{ $statusColor['bg'] }};color:{{ $statusColor['text'] }};">
+                    <span style="width:7px;height:7px;border-radius:50%;background:{{ $statusColor['dot'] }};{{ $isActive && !$isPastDue && !$expiringSoon ? 'animation:sub-pulse 2s infinite;' : '' }}"></span>
+                    {{ $statusLabel }}
+                </span>
+            </div>
+
+            {{-- Past Due Warning --}}
+            @if($isPastDue)
+                <div style="background:#fff3cd;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span style="font-size:16px;">⚠️</span>
+                    <p style="font-size:13px;font-weight:700;color:#92400e;margin:0;flex:1;">Payment failed — update your card to stay active.</p>
+                    <form method="POST" action="{{ route('billing.portal') }}">
+                        @csrf
+                        <button type="submit" style="background:#f59e0b;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;">Fix Now →</button>
+                    </form>
+                </div>
+            @endif
+
+            {{-- Expiring Soon --}}
+            @if($expiringSoon && !$isPastDue)
+                <div style="background:#fff3cd;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:16px;">⏳</span>
+                    <p style="font-size:13px;font-weight:700;color:#92400e;margin:0;flex:1;">
+                        Your plan expires in <strong>{{ $daysLeft }} {{ $daysLeft == 1 ? 'day' : 'days' }}</strong>. Upgrade to keep access.
+                    </p>
+                </div>
+            @endif
+
+            {{-- Expired --}}
+            @if($isExpired && !$isPastDue)
+                <div style="background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:16px;">🔒</span>
+                    <p style="font-size:13px;font-weight:700;color:#991b1b;margin:0;flex:1;">Your plan has expired. Upgrade to regain full access.</p>
+                </div>
+            @endif
+
+            {{-- Posts Usage Bar --}}
+            @if($postsLimit > 0)
+                <div style="margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <span style="font-size:12px;font-weight:600;color:#6b7280;">Posts used this month</span>
+                        <span style="font-size:12px;font-weight:700;color:{{ $postsPercent >= 90 ? '#ef4444' : '#374151' }};">
+                            {{ $postsUsed }} / {{ number_format($postsLimit) }}
+                        </span>
+                    </div>
+                    <div style="background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;">
+                        <div style="width:{{ $postsPercent }}%;height:100%;background:{{ $postsBarColor }};border-radius:99px;transition:width .4s;"></div>
+                    </div>
+                    @if($postsPercent >= 90)
+                        <p style="font-size:11px;color:#ef4444;font-weight:600;margin-top:4px;">⚠ Almost at limit — upgrade for more posts</p>
+                    @endif
+                </div>
+            @endif
+
+            {{-- Pages Usage --}}
+            @if($plan && $plan->pages_limit > 0)
+                @php $pagesUsed = $user->facebookPages->count(); @endphp
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f9fafb;border-radius:10px;margin-bottom:16px;">
+                    <span style="font-size:12px;font-weight:600;color:#6b7280;display:flex;align-items:center;gap:6px;">
+                        <svg width="13" height="13" fill="#10b981" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        Connected Pages
+                    </span>
+                    <span style="font-size:13px;font-weight:700;color:#111827;">{{ $pagesUsed }} / {{ $plan->pages_limit }}</span>
+                </div>
+            @endif
+
+            {{-- Action Buttons --}}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                @if($isFree || $isExpired || !$isActive)
+                    <button onclick="openUpgradeModal('{{ $isExpired ? 'expired' : 'free_limit' }}')"
+                            style="flex:1;min-width:140px;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-weight:700;font-size:14px;border-radius:12px;border:none;cursor:pointer;transition:opacity .15s;"
+                            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        Upgrade Now
+                    </button>
+                @else
+                    @if($user->hasActiveStripeSubscription())
+                        <form method="POST" action="{{ route('billing.portal') }}" style="flex:1;min-width:140px;">
+                            @csrf
+                            <button type="submit" style="width:100%;padding:11px 20px;border:2px solid #2563eb;color:#2563eb;font-weight:700;font-size:14px;border-radius:12px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;"
+                                onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#fff'">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                Manage Billing
+                            </button>
+                        </form>
+                    @endif
+                    <a href="{{ route('plans.index') }}"
+                       style="padding:11px 18px;border:1.5px solid #e5e7eb;color:#6b7280;font-weight:600;font-size:13px;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .15s;background:#fff;"
+                       onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                        View Plans
+                    </a>
+                @endif
+
+                @if($user->invoices()->count() > 0)
+                    <a href="{{ route('billing.invoices') }}"
+                       style="padding:11px 14px;border:1.5px solid #e5e7eb;color:#9ca3af;font-size:12px;font-weight:600;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:5px;transition:all .15s;background:#fff;"
+                       onmouseover="this.style.color='#374151';this.style.background='#f9fafb'" onmouseout="this.style.color='#9ca3af';this.style.background='#fff'">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Invoices
+                    </a>
+                @endif
+            </div>
+        </div>
+        {{-- ══════════════════════════════════════════════════ --}}
+
         {{-- Main Grid --}}
         <div class="main-grid">
 
@@ -84,7 +265,7 @@
             <div>
                 <div class="sidebar-card">
                     <div class="sidebar-section-title">Active Pages</div>
-                    @forelse(auth()->user()->facebookPages as $page)
+                    @forelse($user->facebookPages as $page)
                         <div class="page-item">
                             <span style="font-size:13px;font-weight:600;color:#111827;">{{ $page->page_name }}</span>
                             <div class="page-dot"></div>
@@ -133,10 +314,18 @@
                         </div>
                         <p style="font-size:12px;color:#a5b4fc;margin:0;">Schedule a full month of content in one click — educational, entertaining, and promotional.</p>
                     </div>
-                    <button onclick="openAutopilotModal()" style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:700;font-size:13px;padding:12px 22px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px;">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Get Started
-                    </button>
+                    {{-- إذا الخطة منتهية، الزر يفتح Upgrade Modal --}}
+                    @if($isActive)
+                        <button onclick="openAutopilotModal()" style="background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:700;font-size:13px;padding:12px 22px;border-radius:12px;border:none;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px;">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            Get Started
+                        </button>
+                    @else
+                        <button onclick="openUpgradeModal('expired')" style="background:rgba(255,255,255,.15);color:#fff;font-weight:700;font-size:13px;padding:12px 22px;border-radius:12px;border:1.5px solid rgba(255,255,255,.3);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px;">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Upgrade to Unlock
+                        </button>
+                    @endif
                 </div>
 
                 {{-- Create Post --}}
@@ -161,7 +350,7 @@
                                     <label class="dash-label">Select Page</label>
                                     <input type="text" name="page_name" list="existing_pages" placeholder="Choose or type page name" value="{{ old('page_name') }}" class="dash-input">
                                     <datalist id="existing_pages">
-                                        @foreach(auth()->user()->facebookPages as $page)
+                                        @foreach($user->facebookPages as $page)
                                             <option value="{{ $page->page_name }}">
                                         @endforeach
                                     </datalist>
@@ -287,7 +476,90 @@
     </div>
 </div>
 
-{{-- MODALS --}}
+{{-- ═══════════════════════════════════════════════════════════════ --}}
+{{--                      UPGRADE MODAL                            --}}
+{{-- ═══════════════════════════════════════════════════════════════ --}}
+<div id="upgradeModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;"
+     dir="ltr">
+    <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.25);max-width:520px;width:100%;overflow:hidden;animation:upModal-in .3s cubic-bezier(.34,1.56,.64,1);">
+
+        {{-- Top gradient bar --}}
+        <div style="height:5px;background:linear-gradient(90deg,#2563eb,#7c3aed,#ec4899);"></div>
+
+        {{-- Header --}}
+        <div style="padding:24px 28px 0;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:44px;height:44px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 id="upModal-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0f1117;margin:0;">Upgrade Your Plan</h2>
+                        <p id="upModal-subtitle" style="font-size:13px;color:#9ca3af;margin:4px 0 0;">Unlock full access to all features</p>
+                    </div>
+                </div>
+                <button id="upModal-closeBtn" onclick="closeUpgradeModal()"
+                        style="color:#9ca3af;border:none;background:#f3f4f6;border-radius:8px;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="upModal-banner" style="border-radius:10px;padding:10px 14px;margin:12px 0 0;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;"></div>
+        </div>
+
+        {{-- Plans --}}
+        <div style="padding:20px 28px;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                @foreach($paidPlans as $p)
+                    @php
+                        $isPopular = $p->slug === 'pro';
+                        $isCurrent = $user->currentPlan?->id === $p->id && $isActive;
+                    @endphp
+                    <div style="border:2px solid {{ $isPopular ? '#2563eb' : '#e5e7eb' }};border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;{{ $isPopular ? 'background:#f0f7ff;' : '' }}">
+                        @if($isPopular)
+                            <span style="position:absolute;top:-10px;left:16px;background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;">MOST POPULAR</span>
+                        @endif
+                        <div>
+                            <p style="font-size:15px;font-weight:800;color:#111827;margin:0;font-family:'Syne',sans-serif;">{{ $p->name }}</p>
+                            <p style="font-size:12px;color:#6b7280;margin:3px 0 0;">{{ number_format($p->posts_limit) }} posts · {{ $p->pages_limit }} {{ $p->pages_limit > 1 ? 'pages' : 'page' }}</p>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                            <div style="text-align:right;">
+                                <p style="font-size:20px;font-weight:800;color:#111827;margin:0;">${{ number_format($p->price, 0) }}</p>
+                                <p style="font-size:11px;color:#9ca3af;margin:0;">/month</p>
+                            </div>
+                            @if($isCurrent)
+                                <span style="padding:8px 16px;background:#e0e7ff;color:#3730a3;font-size:12px;font-weight:700;border-radius:10px;">Current</span>
+                            @else
+                            <button type="button"
+    onclick="openPayModal('{{ $p->name }}', {{ $p->price }}, {{ $p->id }})"
+    style="padding:9px 18px;background:{{ $isPopular ? 'linear-gradient(135deg,#2563eb,#7c3aed)' : '#111827' }};color:#fff;font-size:13px;font-weight:700;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;transition:opacity .15s;"
+    onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+    {{ $user->hasActiveStripeSubscription() ? 'Switch' : 'Get Started' }} →
+</button>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div style="padding:0 28px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <p style="font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:5px;margin:0;">
+                <svg width="13" height="13" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                Secured by Stripe · Cancel anytime
+            </p>
+            <a href="{{ route('plans.index') }}" style="font-size:12px;color:#2563eb;font-weight:600;text-decoration:none;">Compare all plans →</a>
+        </div>
+    </div>
+</div>
+
+{{-- ═══════════════════════════════════════════════════════════════ --}}
+{{--                       EXISTING MODALS                         --}}
+{{-- ═══════════════════════════════════════════════════════════════ --}}
 
 {{-- Add Page Modal --}}
 <div id="pageModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
@@ -339,7 +611,6 @@
 {{-- Autopilot Modal --}}
 <div id="autopilotModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.25);max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
-
         <div style="padding:22px 28px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:10px;">
                 <span style="font-size:22px;">🤖</span>
@@ -352,33 +623,18 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-
         <div style="flex:1;overflow-y:auto;">
-
-            {{-- Step 1: Form --}}
             <div id="apStep1" style="padding:24px 28px;display:flex;flex-direction:column;gap:16px;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-                    <div>
-                        <label class="dash-label">Business Name *</label>
-                        <input type="text" id="ap-business" class="dash-input" placeholder="e.g. Al-Asala Restaurant">
-                    </div>
-                    <div>
-                        <label class="dash-label">Industry / Sector *</label>
-                        <input type="text" id="ap-industry" class="dash-input" placeholder="e.g. Restaurants, Fashion, Real Estate">
-                    </div>
-                    <div>
-                        <label class="dash-label">Target Audience *</label>
-                        <input type="text" id="ap-audience" class="dash-input" placeholder="e.g. Young adults 18-35 in Saudi Arabia">
-                    </div>
-                    <div>
-                        <label class="dash-label">Content Goal *</label>
-                        <input type="text" id="ap-goal" class="dash-input" placeholder="e.g. Increase sales, grow followers">
-                    </div>
+                    <div><label class="dash-label">Business Name *</label><input type="text" id="ap-business" class="dash-input" placeholder="e.g. Al-Asala Restaurant"></div>
+                    <div><label class="dash-label">Industry / Sector *</label><input type="text" id="ap-industry" class="dash-input" placeholder="e.g. Restaurants, Fashion, Real Estate"></div>
+                    <div><label class="dash-label">Target Audience *</label><input type="text" id="ap-audience" class="dash-input" placeholder="e.g. Young adults 18-35 in Saudi Arabia"></div>
+                    <div><label class="dash-label">Content Goal *</label><input type="text" id="ap-goal" class="dash-input" placeholder="e.g. Increase sales, grow followers"></div>
                     <div>
                         <label class="dash-label">Page *</label>
                         <select id="ap-page" class="dash-input">
                             <option value="">Select a page</option>
-                            @foreach(auth()->user()->facebookPages as $page)
+                            @foreach($user->facebookPages as $page)
                                 <option value="{{ $page->page_name }}">{{ $page->page_name }}</option>
                             @endforeach
                         </select>
@@ -408,8 +664,6 @@
                     Generate Full Month Plan
                 </button>
             </div>
-
-            {{-- Step 2: Loading --}}
             <div id="apStep2" style="display:none;padding:48px 28px;text-align:center;">
                 <svg style="animation:spin 1s linear infinite;width:48px;height:48px;color:#7c3aed;margin:0 auto 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20" stroke-linecap="round"/></svg>
                 <p style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">AI is generating your plan...</p>
@@ -418,8 +672,6 @@
                     <div id="ap-progress-bar" style="height:100%;background:linear-gradient(90deg,#7c3aed,#2563eb);border-radius:99px;width:0%;transition:width .3s;"></div>
                 </div>
             </div>
-
-            {{-- Step 3: Preview --}}
             <div id="apStep3" style="display:none;padding:24px 28px;">
                 <div id="ap-summary" style="background:#f0fdf4;border:1px solid #a7f3d0;border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:#065f46;font-weight:600;"></div>
                 <div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;" id="ap-posts-preview"></div>
@@ -431,8 +683,6 @@
                     </button>
                 </div>
             </div>
-
-            {{-- Step 4: Success --}}
             <div id="apStep4" style="display:none;padding:48px 28px;text-align:center;">
                 <div style="width:64px;height:64px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                     <svg width="32" height="32" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -441,7 +691,6 @@
                 <p style="font-size:13px;color:#9ca3af;margin-bottom:24px;">All posts are now visible in the calendar below.</p>
                 <button onclick="closeAutopilotModal()" style="background:#f3f4f6;color:#374151;font-weight:700;font-size:14px;padding:12px 28px;border-radius:12px;border:none;cursor:pointer;">Got it, view calendar</button>
             </div>
-
         </div>
     </div>
 </div>
@@ -449,7 +698,6 @@
 {{-- Date Click Modal --}}
 <div id="dateClickModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.25);max-width:500px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
-
         <div style="padding:20px 24px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div>
                 <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#0f1117;margin:0;">✨ Create Post with AI</h3>
@@ -459,23 +707,12 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
-
         <div style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
-
             <div id="dcFormArea">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-                    <div>
-                        <label class="dash-label">Business Name *</label>
-                        <input type="text" id="dc-business" class="dash-input" placeholder="Al-Asala Restaurant">
-                    </div>
-                    <div>
-                        <label class="dash-label">Industry *</label>
-                        <input type="text" id="dc-industry" class="dash-input" placeholder="Restaurants, Fashion...">
-                    </div>
-                    <div>
-                        <label class="dash-label">Audience *</label>
-                        <input type="text" id="dc-audience" class="dash-input" placeholder="Young adults 18-35">
-                    </div>
+                    <div><label class="dash-label">Business Name *</label><input type="text" id="dc-business" class="dash-input" placeholder="Al-Asala Restaurant"></div>
+                    <div><label class="dash-label">Industry *</label><input type="text" id="dc-industry" class="dash-input" placeholder="Restaurants, Fashion..."></div>
+                    <div><label class="dash-label">Audience *</label><input type="text" id="dc-audience" class="dash-input" placeholder="Young adults 18-35"></div>
                     <div>
                         <label class="dash-label">Tone *</label>
                         <select id="dc-tone" class="dash-input">
@@ -501,7 +738,6 @@
                     ✨ Generate Post
                 </button>
             </div>
-
             <div id="dcResultArea" style="display:none;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                     <label class="dash-label" style="margin:0;">Generated Post</label>
@@ -509,12 +745,11 @@
                 </div>
                 <textarea id="dc-content" class="dash-textarea" style="min-height:140px;margin-bottom:12px;" oninput="updateDcCharCount(this)"></textarea>
                 <p id="dc-char-count" style="font-size:11px;color:#9ca3af;margin-bottom:12px;text-align:right;">0 / 2200</p>
-
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
                     <div>
                         <label class="dash-label">Page *</label>
                         <select id="dc-page" class="dash-input">
-                            @foreach(auth()->user()->facebookPages as $page)
+                            @foreach($user->facebookPages as $page)
                                 <option value="{{ $page->page_name }}">{{ $page->page_name }}</option>
                             @endforeach
                         </select>
@@ -524,7 +759,6 @@
                         <input type="datetime-local" id="dc-scheduled-at" class="dash-input">
                     </div>
                 </div>
-
                 <div id="dc-save-error" style="display:none;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:8px;"></div>
                 <button onclick="saveDcPost()" id="dc-save-btn" style="width:100%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:700;font-size:14px;padding:13px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
@@ -532,7 +766,6 @@
                     Schedule This Post
                 </button>
             </div>
-
         </div>
     </div>
 </div>
@@ -570,9 +803,7 @@
             <div id="mlGridView">
                 <div id="mlGrid" class="ml-grid"></div>
                 <div id="mlLoadMoreWrapper" style="text-align:center;margin-top:16px;display:none;"><button onclick="mlLoadMore()" style="font-size:13px;color:#2563eb;font-weight:700;background:none;border:none;cursor:pointer;">Load more ↓</button></div>
-                <div id="mlEmpty" style="display:none;text-align:center;padding:48px 24px;color:#9ca3af;">
-                    <p style="font-weight:600;font-size:14px;">No media found</p>
-                </div>
+                <div id="mlEmpty" style="display:none;text-align:center;padding:48px 24px;color:#9ca3af;"><p style="font-weight:600;font-size:14px;">No media found</p></div>
             </div>
             <div id="mlUploadView" style="display:none;">
                 <div id="mlDropZone" onclick="document.getElementById('mlFileInput').click()" ondragover="mlDragOver(event)" ondragleave="mlDragLeave(event)" ondrop="mlDrop(event)" style="border:2px dashed #d1d5db;border-radius:16px;padding:56px 24px;text-align:center;cursor:pointer;" onmouseover="this.style.borderColor='#2563eb';this.style.background='#eff6ff'" onmouseout="this.style.borderColor='#d1d5db';this.style.background='transparent'">
@@ -609,8 +840,116 @@
     </div>
 </div>
 
-<div id="toast" class="toast"></div>
+{{-- Payment Modal --}}
+<div id="payModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:10000;align-items:center;justify-content:center;padding:20px;"
+     dir="ltr">
+    <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.3);max-width:500px;width:100%;overflow:hidden;animation:upModal-in .3s cubic-bezier(.34,1.56,.64,1);">
+        
+        {{-- Top Bar --}}
+        <div style="height:5px;background:linear-gradient(90deg,#2563eb,#7c3aed,#ec4899);"></div>
 
+        {{-- Body --}}
+        <div style="display:flex;gap:0;">
+
+            {{-- Left: Plan Summary --}}
+            <div style="background:#0f1117;padding:28px 24px;min-width:190px;display:flex;flex-direction:column;gap:8px;">
+                <p style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin:0;">Social Scheduler</p>
+                <p id="pay-plan-name" style="font-size:20px;font-weight:800;color:#fff;margin:0;font-family:'Syne',sans-serif;"></p>
+                <p id="pay-plan-price-big" style="font-size:32px;font-weight:800;color:#fff;margin:0;"></p>
+                <p style="font-size:12px;color:#6b7280;margin:0;">per month</p>
+                <div style="border-top:1px solid #1f2937;margin:12px 0;"></div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:12px;color:#9ca3af;" id="pay-summary-label"></span>
+                    <span style="font-size:12px;color:#9ca3af;" id="pay-summary-price"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:12px;color:#9ca3af;">Subtotal</span>
+                    <span style="font-size:12px;color:#9ca3af;" id="pay-subtotal"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:12px;color:#9ca3af;">Tax</span>
+                    <span style="font-size:12px;color:#9ca3af;">$0.00</span>
+                </div>
+                <div style="border-top:1px solid #1f2937;margin:8px 0;"></div>
+                <div style="display:flex;justify-content:space-between;">
+                    <span style="font-size:13px;font-weight:700;color:#fff;">Total due today</span>
+                    <span style="font-size:13px;font-weight:700;color:#fff;" id="pay-total"></span>
+                </div>
+                <div style="margin-top:auto;padding-top:16px;display:flex;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#6b7280"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                    <span style="font-size:11px;color:#6b7280;">Powered by Stripe</span>
+                </div>
+            </div>
+
+            {{-- Right: Card Form --}}
+            <div style="flex:1;padding:28px 24px;position:relative;">
+                <button onclick="closePayModal()"
+                        style="position:absolute;top:16px;right:16px;color:#9ca3af;border:none;background:#f3f4f6;border-radius:8px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+
+                <p style="font-size:15px;font-weight:700;color:#111827;margin:0 0 20px;">Pay with card</p>
+
+                {{-- Email --}}
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Email</label>
+                    <input type="email" id="pay-email" value="{{ auth()->user()->email }}"
+                           style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;color:#111827;outline:none;box-sizing:border-box;"
+                           onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#d1d5db'">
+                </div>
+
+                {{-- Card Number --}}
+                <div style="margin-bottom:0;">
+                    <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Card information</label>
+                    <div style="border:1.5px solid #d1d5db;border-radius:10px;overflow:hidden;">
+                        <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #e5e7eb;gap:8px;">
+                            <input type="text" id="pay-card-number" placeholder="1234 1234 1234 1234" maxlength="19"
+                                   oninput="formatCardNumber(this)"
+                                   style="flex:1;border:none;outline:none;font-size:13px;color:#111827;">
+                            <div style="display:flex;gap:4px;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/800px-Visa_Inc._logo.svg.png" style="height:18px;object-fit:contain;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/800px-Mastercard-logo.svg.png" style="height:18px;object-fit:contain;">
+                            </div>
+                        </div>
+                        <div style="display:flex;">
+                            <input type="text" id="pay-expiry" placeholder="MM / YY" maxlength="7"
+                                   oninput="formatExpiry(this)"
+                                   style="flex:1;padding:10px 14px;border:none;border-right:1px solid #e5e7eb;outline:none;font-size:13px;color:#111827;">
+                            <input type="text" id="pay-cvc" placeholder="CVC" maxlength="3"
+                                   style="flex:1;padding:10px 14px;border:none;outline:none;font-size:13px;color:#111827;">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Name --}}
+                <div style="margin-top:16px;margin-bottom:20px;">
+                    <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Name on card</label>
+                    <input type="text" id="pay-name" placeholder="Full name"
+                           style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:13px;color:#111827;outline:none;box-sizing:border-box;"
+                           onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#d1d5db'">
+                </div>
+
+                {{-- Error --}}
+                <div id="pay-error" style="display:none;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:12px;"></div>
+
+                {{-- Submit Button --}}
+                <button id="pay-submit-btn" onclick="submitPayment()"
+                        style="width:100%;padding:13px;background:#6772e5;color:#fff;font-size:14px;font-weight:700;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;"
+                        onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                    <span id="pay-btn-text">Subscribe — <span id="pay-btn-price"></span> / month</span>
+                    <svg id="pay-spinner" style="display:none;animation:spin 1s linear infinite;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20" stroke-linecap="round"/></svg>
+                </button>
+
+                <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:4px;">
+                    <svg width="12" height="12" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Secured by Stripe
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
 <style>
 .ap-tone-btn {
     padding: 10px 14px;
@@ -633,7 +972,115 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js"></script>
+<script>
+let currentPlanId = null;
 
+function openPayModal(planName, planPrice, planId) {
+    currentPlanId = planId;
+    
+    // حط البيانات
+    document.getElementById('pay-plan-name').textContent  = planName + ' Plan';
+    document.getElementById('pay-plan-price-big').textContent = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-summary-label').textContent  = planName + ' Plan — monthly';
+    document.getElementById('pay-summary-price').textContent  = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-subtotal').textContent       = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-total').textContent          = '$' + parseFloat(planPrice).toFixed(2);
+    document.getElementById('pay-btn-price').textContent      = '$' + parseFloat(planPrice).toFixed(2);
+
+    // إخفاء الـ upgrade modal وفتح الـ pay modal
+    closeUpgradeModal();
+    document.getElementById('pay-error').style.display = 'none';
+    document.getElementById('pay-card-number').value = '';
+    document.getElementById('pay-expiry').value = '';
+    document.getElementById('pay-cvc').value = '';
+    document.getElementById('pay-name').value = '';
+    document.getElementById('payModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closePayModal() {
+    document.getElementById('payModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('payModal').addEventListener('click', function(e) {
+    if (e.target === this) closePayModal();
+});
+
+function formatCardNumber(input) {
+    let val = input.value.replace(/\D/g, '').substring(0, 16);
+    input.value = val.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatExpiry(input) {
+    let val = input.value.replace(/\D/g, '').substring(0, 4);
+    if (val.length >= 2) val = val.substring(0,2) + ' / ' + val.substring(2);
+    input.value = val;
+}
+
+async function submitPayment() {
+    const cardNumber = document.getElementById('pay-card-number').value.replace(/\s/g,'');
+    const expiry     = document.getElementById('pay-expiry').value;
+    const cvc        = document.getElementById('pay-cvc').value;
+    const name       = document.getElementById('pay-name').value.trim();
+    const email      = document.getElementById('pay-email').value.trim();
+    const errEl      = document.getElementById('pay-error');
+
+    if (!email || !cardNumber || !expiry || !cvc || !name) {
+        errEl.textContent = 'Please fill in all fields.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (cardNumber.length < 16) {
+        errEl.textContent = 'Please enter a valid card number.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (cvc.length < 3) {
+        errEl.textContent = 'Please enter a valid CVC.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    errEl.style.display = 'none';
+
+    const btn     = document.getElementById('pay-submit-btn');
+    const btnText = document.getElementById('pay-btn-text');
+    const spinner = document.getElementById('pay-spinner');
+    btn.disabled          = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+
+    try {
+        const res = await fetch(`/billing/fake-checkout/${currentPlanId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type':  'application/json',
+                'X-CSRF-TOKEN':  document.querySelector('meta[name="csrf-token"]').content,
+                'Accept':        'application/json',
+            },
+            credentials: 'same-origin',
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            closePayModal();
+            showToast('✅ Plan activated! Refreshing...');
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            throw new Error(data.message ?? 'Failed');
+        }
+
+    } catch(e) {
+        btn.disabled          = false;
+        btnText.style.display = 'inline';
+        spinner.style.display = 'none';
+        errEl.textContent     = e.message || 'Something went wrong.';
+        errEl.style.display   = 'block';
+    }
+}
+</script>
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
@@ -1097,4 +1544,101 @@ function showPostMediaPreview(url,name,type){document.getElementById('postMediaU
 function clearPostMedia(){document.getElementById('media').value='';document.getElementById('mediaLibraryId').value='';document.getElementById('postMediaPreviewImg').src='';document.getElementById('postMediaPreviewVid').src='';document.getElementById('postMediaPreview').style.display='none';document.getElementById('postMediaUploadArea').style.display='flex';}
 </script>
 
+
+
+<style>
+.sub-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1.5px solid #f0f0f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    margin-bottom: 20px;
+}
+@keyframes sub-pulse {
+    0%, 100% { opacity:1; transform:scale(1); }
+    50%       { opacity:.6; transform:scale(1.3); }
+}
+@keyframes upModal-in {
+    from { opacity:0; transform:scale(.92) translateY(16px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
+</style>
+ 
+<script>
+(function () {
+    function openUpgradeModal(reason) {
+        const modal    = document.getElementById('upgradeModal');
+        const title    = document.getElementById('upModal-title');
+        const subtitle = document.getElementById('upModal-subtitle');
+        const banner   = document.getElementById('upModal-banner');
+ 
+        const configs = {
+            expired: {
+                title:    'Your Plan Has Expired',
+                subtitle: 'Renew now to continue scheduling posts',
+                banner:   '🔒 Your access has ended. Pick a plan below to get back up and running.',
+                bannerBg: '#fee2e2', bannerColor: '#991b1b',
+            },
+            limit: {
+                title:    "You've Hit Your Post Limit",
+                subtitle: 'Upgrade to schedule more posts this month',
+                banner:   "📊 You've used all your posts for this month. Upgrade for more.",
+                bannerBg: '#fff3cd', bannerColor: '#856404',
+            },
+            free_limit: {
+                title:    'Unlock Full Power',
+                subtitle: 'You need a paid plan to use this feature',
+                banner:   '✨ This feature is available on paid plans.',
+                bannerBg: '#eff6ff', bannerColor: '#1d4ed8',
+            },
+            manual: {
+                title:    'Upgrade Your Plan',
+                subtitle: 'Unlock full access to all features',
+                banner:   '', bannerBg: '', bannerColor: '',
+            },
+        };
+ 
+        const cfg = configs[reason] || configs.manual;
+        title.textContent    = cfg.title;
+        subtitle.textContent = cfg.subtitle;
+ 
+        if (cfg.banner) {
+            banner.textContent      = cfg.banner;
+            banner.style.background = cfg.bannerBg;
+            banner.style.color      = cfg.bannerColor;
+            banner.style.display    = 'flex';
+        } else {
+            banner.style.display = 'none';
+        }
+ 
+        modal.style.display          = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+ 
+    function closeUpgradeModal() {
+        document.getElementById('upgradeModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+ 
+    window.openUpgradeModal  = openUpgradeModal;
+    window.closeUpgradeModal = closeUpgradeModal;
+ 
+    // Close on backdrop click
+    document.getElementById('upgradeModal').addEventListener('click', function (e) {
+        if (e.target === this) closeUpgradeModal();
+    });
+ 
+    // Auto-show on page load
+    @if($autoShowUpgrade)
+        document.addEventListener('DOMContentLoaded', function () {
+            openUpgradeModal('{{ $autoUpgradeReason }}');
+        });
+    @endif
+})();
+</script>
+ 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js"></script>
+ 
 </x-app-layout>

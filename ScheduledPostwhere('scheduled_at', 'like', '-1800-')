@@ -1,0 +1,34 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#1264
+    [34mall[39m: [
+      [34;4mApp\Models\ScheduledPost[39;24m {#8543
+        [34mid[39m: [35m143[39m,
+        [34mcontent[39m: [32m"[39m[32mLet's engage! 🤝 Share your thoughts and ideas with us! 💬 #test #engagement[39m[32m"[39m,
+        [34mscheduled_at[39m: [32m"[39m[32m2026-06-03 21:00:00[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mpending[39m[32m"[39m,
+      },
+      [34;4mApp\Models\ScheduledPost[39;24m {#8542
+        [34mid[39m: [35m142[39m,
+        [34mcontent[39m: [32m"[39m[32mFun facts! 🤔 Did you know that learning can be fun? 📚 #test #funfacts[39m[32m"[39m,
+        [34mscheduled_at[39m: [32m"[39m[32m2026-05-31 18:00:00[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mpending[39m[32m"[39m,
+      },
+      [34;4mApp\Models\ScheduledPost[39;24m {#8545
+        [34mid[39m: [35m141[39m,
+        [34mcontent[39m: [32m"[39m[32mLimited time offer! 🕒 Don't miss out on our exclusive deal! 🎁 #test #limitedtime[39m[32m"[39m,
+        [34mscheduled_at[39m: [32m"[39m[32m2026-05-18 12:00:00[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mpending[39m[32m"[39m,
+      },
+      [34;4mApp\Models\ScheduledPost[39;24m {#8546
+        [34mid[39m: [35m140[39m,
+        [34mcontent[39m: [32m"[39m[32mMotivation Monday! 💪 Start your week with a positive quote! 📝 #test #motivation[39m[32m"[39m,
+        [34mscheduled_at[39m: [32m"[39m[32m2026-05-17 09:00:00[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mpending[39m[32m"[39m,
+      },
+      [34;4mApp\Models\ScheduledPost[39;24m {#8547
+        [34mid[39m: [35m139[39m,
+        [34mcontent[39m: [32m"[39m[32mBehind the scenes! 🎬 Take a sneak peek at what we're working on! 📹 #test #bts[39m[32m"[39m,
+        [34mscheduled_at[39m: [32m"[39m[32m2026-05-13 21:00:00[39m[32m"[39m,
+        [34mstatus[39m: [32m"[39m[32mpending[39m[32m"[39m,
+      },
+    ],
+  }
