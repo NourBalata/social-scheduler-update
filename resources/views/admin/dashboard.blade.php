@@ -14,23 +14,22 @@ body { font-family: 'DM Sans', system-ui, sans-serif; background: #f0f2f5; }
 
 .dash-wrap { max-width: 1280px; margin: 0 auto; padding: 28px 20px; }
 
-/* ── Section title ── */
+
 .section-title { font-size: 13px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin: 28px 0 14px; }
 
-/* ── Stat cards ── */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 8px; }
 .stat-card { background: var(--card); border-radius: 14px; padding: 18px; border: 1px solid var(--steel); }
 .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 .stat-num  { font-size: 26px; font-weight: 700; color: var(--ink); line-height: 1; }
 .stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
 
-/* ── Charts row ── */
+
 .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 8px; }
 @media(max-width:768px){ .charts-row { grid-template-columns: 1fr; } }
 .chart-card { background: var(--card); border-radius: 14px; padding: 20px; border: 1px solid var(--steel); }
 .chart-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 16px; }
 
-/* ── Table card ── */
+
 .table-card { background: var(--card); border-radius: 14px; border: 1px solid var(--steel); overflow: hidden; }
 .table-header { padding: 16px 20px; border-bottom: 1px solid var(--steel); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 .table-title { font-size: 15px; font-weight: 700; color: var(--ink); }
@@ -45,7 +44,7 @@ td { padding: 13px 16px; font-size: 13px; color: #374151; border-bottom: 1px sol
 tr:last-child td { border-bottom: none; }
 tr.user-row:hover td { background: #fafbff; }
 
-/* ── Badges ── */
+
 .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap; }
 .badge-purple { background: #f3f0ff; color: #6d28d9; }
 .badge-gray   { background: #f3f4f6; color: #6b7280; }
@@ -54,15 +53,15 @@ tr.user-row:hover td { background: #fafbff; }
 .badge-amber  { background: #fef3c7; color: #92400e; }
 .badge-red    { background: #fee2e2; color: #991b1b; }
 
-/* ── Avatar ── */
+
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,#60a5fa,#2563eb); color:#fff; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .user-cell { display: flex; align-items: center; gap: 10px; }
 
-/* ── Action buttons ── */
+
 .action-btn { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 7px; display: inline-flex; align-items: center; transition: background .12s; color: #9ca3af; }
 .action-btn:hover { background: var(--mist); color: var(--ink); }
 
-/* ── Plans table ── */
+
 .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .plan-card { background: var(--card); border-radius: 12px; border: 1px solid var(--steel); padding: 16px; }
 .plan-name { font-weight: 700; font-size: 15px; color: var(--ink); }
@@ -87,7 +86,7 @@ tr.user-row:hover td { background: #fafbff; }
 .btn-cancel-sm { background:var(--mist); color:#374151; border:1px solid var(--steel); border-radius:10px; padding:10px 18px; font-size:14px; cursor:pointer; }
 .modal-footer { display:flex; gap:10px; padding-top:6px; }
 
-/* ── Stripe status chip ── */
+
 .stripe-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:700; }
 .chip-active   { background:#d1fae5; color:#065f46; }
 .chip-past_due { background:#fef3c7; color:#92400e; }
@@ -113,7 +112,7 @@ tr.user-row:hover td { background: #fafbff; }
 
 <div class="dash-wrap" dir="ltr">
 
-    {{-- ══════════════════ OVERVIEW STATS ══════════════════ --}}
+
     <div class="section-title">Overview</div>
     <div class="stats-grid">
 
@@ -167,7 +166,7 @@ tr.user-row:hover td { background: #fafbff; }
 
     </div>
 
-    {{-- ══════════════════ CHARTS ══════════════════ --}}
+  
     <div class="section-title">Revenue & Distribution</div>
     <div class="charts-row">
 
@@ -183,7 +182,7 @@ tr.user-row:hover td { background: #fafbff; }
 
     </div>
 
-    {{-- ══════════════════ PLANS ══════════════════ --}}
+  
     <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
         <span>Plans</span>
         <button class="add-btn" onclick="openPlanModal()" style="font-size:12px;padding:6px 13px;">+ New plan</button>
@@ -213,7 +212,7 @@ tr.user-row:hover td { background: #fafbff; }
         @endforeach
     </div>
 
-    {{-- ══════════════════ USERS TABLE ══════════════════ --}}
+
     <div class="section-title">Subscribers</div>
     <div class="table-card">
 
@@ -281,12 +280,12 @@ tr.user-row:hover td { background: #fafbff; }
                         <td style="color:#9ca3af;font-size:12px;">{{ $user->created_at->format('M d, Y') }}</td>
                         <td>
                             <div style="display:flex;gap:4px;">
-                                {{-- Change plan --}}
+                            
                                 <button class="action-btn" title="Change plan"
                                     onclick="openChangePlan({{ $user->id }}, '{{ addslashes($user->name) }}', {{ $user->plan_id ?? 'null' }})">
                                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h10M7 12h10M7 17h6"/></svg>
                                 </button>
-                                {{-- Delete --}}
+                     
                                 <button class="action-btn" title="Delete user" style="color:#ef4444;"
                                     onclick="deleteUser({{ $user->id }}, '{{ addslashes($user->name) }}')">
                                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -304,7 +303,7 @@ tr.user-row:hover td { background: #fafbff; }
 
 </div>
 
-{{-- ══════════ MODAL: Add User ══════════ --}}
+
 <div id="addUserModal" class="modal-backdrop">
     <div class="modal-inner">
         <div class="modal-head">
@@ -340,7 +339,7 @@ tr.user-row:hover td { background: #fafbff; }
     </div>
 </div>
 
-{{-- ══════════ MODAL: Change Plan ══════════ --}}
+
 <div id="changePlanModal" class="modal-backdrop">
     <div class="modal-inner" style="max-width:400px;">
         <div class="modal-head">
@@ -371,7 +370,7 @@ tr.user-row:hover td { background: #fafbff; }
     </div>
 </div>
 
-{{-- ══════════ MODAL: Plan Edit / Create ══════════ --}}
+
 <div id="planModal" class="modal-backdrop">
     <div class="modal-inner" style="max-width:480px;">
         <div class="modal-head">
@@ -407,7 +406,7 @@ tr.user-row:hover td { background: #fafbff; }
 </div>
 
 <script>
-// ── Helpers ──────────────────────────────────────────────────────────────────
+
 function closeModal(id) {
     document.getElementById(id).classList.remove('open');
     document.body.style.overflow = '';
@@ -422,10 +421,10 @@ document.querySelectorAll('.modal-backdrop').forEach(m => {
     m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
 });
 
-// ── Open Add User ─────────────────────────────────────────────────────────────
+
 document.getElementById('openAddUserBtn')?.addEventListener('click', () => openModal('addUserModal'));
 
-// ── Search + filter ───────────────────────────────────────────────────────────
+
 function filterTable() {
     const q    = document.getElementById('searchInput').value.toLowerCase();
     const plan = document.getElementById('planFilter').value.toLowerCase();
@@ -438,7 +437,7 @@ function filterTable() {
 document.getElementById('searchInput')?.addEventListener('input', filterTable);
 document.getElementById('planFilter')?.addEventListener('change', filterTable);
 
-// ── Change Plan ───────────────────────────────────────────────────────────────
+
 function openChangePlan(userId, userName, currentPlanId) {
     document.getElementById('changePlanTitle').textContent = `Change plan — ${userName}`;
     document.getElementById('changePlanUserId').value = userId;
@@ -466,7 +465,7 @@ function submitChangePlan() {
     });
 }
 
-// ── Delete User ───────────────────────────────────────────────────────────────
+
 function deleteUser(userId, userName) {
     Swal.fire({
         title: `Delete ${userName}?`,
@@ -491,7 +490,6 @@ function deleteUser(userId, userName) {
     });
 }
 
-// ── Plans ─────────────────────────────────────────────────────────────────────
 function openPlanModal() {
     document.getElementById('planModalTitle').textContent = 'New plan';
     document.getElementById('planModalId').value = '';
@@ -545,7 +543,7 @@ function submitPlan() {
     });
 }
 
-// ── Charts ────────────────────────────────────────────────────────────────────
+
 const revenueData = @json($revenueChart);
 const planData    = @json($plansBreakdown);
 

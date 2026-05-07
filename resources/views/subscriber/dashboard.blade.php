@@ -476,9 +476,6 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════════════════ --}}
-{{--                      UPGRADE MODAL                            --}}
-{{-- ═══════════════════════════════════════════════════════════════ --}}
 <div id="upgradeModal"
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;"
      dir="ltr">
@@ -546,7 +543,7 @@
             </div>
         </div>
 
-        {{-- Footer --}}
+      
         <div style="padding:0 28px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <p style="font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:5px;margin:0;">
                 <svg width="13" height="13" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -557,11 +554,7 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════════════════ --}}
-{{--                       EXISTING MODALS                         --}}
-{{-- ═══════════════════════════════════════════════════════════════ --}}
 
-{{-- Add Page Modal --}}
 <div id="pageModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);max-width:480px;width:100%;">
         <div style="padding:20px 24px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;">
@@ -583,7 +576,7 @@
     </div>
 </div>
 
-{{-- Post Details Modal --}}
+
 <div id="calModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.2);max-width:460px;width:100%;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
@@ -608,7 +601,7 @@
     </div>
 </div>
 
-{{-- Autopilot Modal --}}
+
 <div id="autopilotModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.25);max-width:560px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
         <div style="padding:22px 28px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -695,7 +688,7 @@
     </div>
 </div>
 
-{{-- Date Click Modal --}}
+
 <div id="dateClickModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4" dir="ltr">
     <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.25);max-width:500px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
         <div style="padding:20px 24px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -770,7 +763,7 @@
     </div>
 </div>
 
-{{-- Media Library Modal --}}
+
 <div id="mediaLibraryModal" class="ml-modal-backdrop" dir="ltr">
     <div class="ml-modal-inner">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">
@@ -840,19 +833,18 @@
     </div>
 </div>
 
-{{-- Payment Modal --}}
 <div id="payModal"
      style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:10000;align-items:center;justify-content:center;padding:20px;"
      dir="ltr">
     <div style="background:#fff;border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.3);max-width:500px;width:100%;overflow:hidden;animation:upModal-in .3s cubic-bezier(.34,1.56,.64,1);">
         
-        {{-- Top Bar --}}
+       
         <div style="height:5px;background:linear-gradient(90deg,#2563eb,#7c3aed,#ec4899);"></div>
 
-        {{-- Body --}}
+  
         <div style="display:flex;gap:0;">
 
-            {{-- Left: Plan Summary --}}
+        
             <div style="background:#0f1117;padding:28px 24px;min-width:190px;display:flex;flex-direction:column;gap:8px;">
                 <p style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin:0;">Social Scheduler</p>
                 <p id="pay-plan-name" style="font-size:20px;font-weight:800;color:#fff;margin:0;font-family:'Syne',sans-serif;"></p>
@@ -882,7 +874,7 @@
                 </div>
             </div>
 
-            {{-- Right: Card Form --}}
+       
             <div style="flex:1;padding:28px 24px;position:relative;">
                 <button onclick="closePayModal()"
                         style="position:absolute;top:16px;right:16px;color:#9ca3af;border:none;background:#f3f4f6;border-radius:8px;width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
@@ -891,7 +883,7 @@
 
                 <p style="font-size:15px;font-weight:700;color:#111827;margin:0 0 20px;">Pay with card</p>
 
-                {{-- Email --}}
+      
                 <div style="margin-bottom:16px;">
                     <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Email</label>
                     <input type="email" id="pay-email" value="{{ auth()->user()->email }}"
@@ -977,8 +969,6 @@ let currentPlanId = null;
 
 function openPayModal(planName, planPrice, planId) {
     currentPlanId = planId;
-    
-    // حط البيانات
     document.getElementById('pay-plan-name').textContent  = planName + ' Plan';
     document.getElementById('pay-plan-price-big').textContent = '$' + parseFloat(planPrice).toFixed(2);
     document.getElementById('pay-summary-label').textContent  = planName + ' Plan — monthly';
@@ -987,7 +977,6 @@ function openPayModal(planName, planPrice, planId) {
     document.getElementById('pay-total').textContent          = '$' + parseFloat(planPrice).toFixed(2);
     document.getElementById('pay-btn-price').textContent      = '$' + parseFloat(planPrice).toFixed(2);
 
-    // إخفاء الـ upgrade modal وفتح الـ pay modal
     closeUpgradeModal();
     document.getElementById('pay-error').style.display = 'none';
     document.getElementById('pay-card-number').value = '';
@@ -1066,7 +1055,7 @@ async function submitPayment() {
 
         if (data.success) {
             closePayModal();
-            showToast('✅ Plan activated! Refreshing...');
+            showToast('Plan activated! Refreshing...');
             setTimeout(() => window.location.reload(), 1500);
         } else {
             throw new Error(data.message ?? 'Failed');
@@ -1084,7 +1073,7 @@ async function submitPayment() {
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-// Page Modal
+
 const pageModal = document.getElementById('pageModal');
 document.getElementById('openPageModalBtnQuick')?.addEventListener('click', () => pageModal.classList.replace('hidden','flex'));
 document.getElementById('closePageModalBtn')?.addEventListener('click',   () => pageModal.classList.replace('flex','hidden'));
@@ -1624,12 +1613,12 @@ function clearPostMedia(){document.getElementById('media').value='';document.get
     window.openUpgradeModal  = openUpgradeModal;
     window.closeUpgradeModal = closeUpgradeModal;
  
-    // Close on backdrop click
+
     document.getElementById('upgradeModal').addEventListener('click', function (e) {
         if (e.target === this) closeUpgradeModal();
     });
  
-    // Auto-show on page load
+
     @if($autoShowUpgrade)
         document.addEventListener('DOMContentLoaded', function () {
             openUpgradeModal('{{ $autoUpgradeReason }}');

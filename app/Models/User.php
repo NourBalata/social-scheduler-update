@@ -117,7 +117,11 @@ class User extends Authenticatable
 
         return max(0, $this->currentPlan->posts_limit - $used);
     }
-
+    
+public function posts(): HasMany
+{
+    return $this->scheduledPosts();
+}
     public function canAddPage(): bool
     {
         if (! $this->hasActivePlan() || ! $this->currentPlan) {

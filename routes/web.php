@@ -94,8 +94,5 @@ Route::middleware(['auth', 'verified'])->prefix('billing')->name('billing.')->gr
     Route::get('/invoices',         [BillingController::class, 'invoices'])->name('invoices');
 });
 
-Route::post('/stripe/webhook', [BillingController::class, 'webhook'])
-    ->name('stripe.webhook')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 require __DIR__ . '/auth.php';
