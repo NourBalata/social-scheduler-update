@@ -8,3 +8,5 @@
 /storage/framework/sessions
 /storage/framework/views
 .git
+/public/vendor
+/public/build
