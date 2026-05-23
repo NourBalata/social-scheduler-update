@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Builder;
+
+class ScheduledPost extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'facebook_page_id',
+        'content',
+        'media',
+        'scheduled_at',
+        'status',
+        'facebook_post_id',
+        'error_message',
+        'published_at',
+    ];
+
+    protected $casts = [
+        'media'        => 'array',
+        'scheduled_at' => 'datetime',
+        'published_at' => 'datetime',
+        'status'       => 'string',
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function facebookPage(): BelongsTo
+    {
+        return $this->belongsTo(FacebookPage::class, 'facebook_page_id');
+    }
+
+    public function analytics(): HasOne
+    {
+        return $this->hasOne(PostAnalytic::class, 'scheduled_post_id');
+    }
+
+    public function markAsPublished(string $fbPostId): void
+    {
+        $this->update([
+            'status'           => 'published',
+            'facebook_post_id' => $fbPostId,
+            'published_at'     => now(),
+        ]);
+
+        $this->user?->notify(new \App\Notifications\PostPublishedNotification($this));
+    }
+
+    public function markAsFailed(string $error): void
+    {
+        $this->update([
+            'status'        => 'failed',
+            'error_message' => substr($error, 0, 1000),
+        ]);
+
+        $this->user?->notify(new \App\Notifications\PostFailedNotification($this));
+    }
+
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeReady(Builder $query): Builder
+    {
+        return $query->pending()
+            ->where('scheduled_at', '<=', now());
+    }
+
+    public function scopeStuck(Builder $query): Builder
+    {
+        return $query->where('status', 'processing')
+            ->where('updated_at', '<=', now()->subMinutes(10));
+    }
+}
