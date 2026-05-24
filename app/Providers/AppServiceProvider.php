@@ -14,11 +14,12 @@ class AppServiceProvider extends ServiceProvider
     {
     
         $this->app->bind(SocialMediaProvider::class, FacebookProvider::class);
+        
     }
 
     public function boot(): void
     {
-        
+        \URL::forceScheme('https');
         // User::observe(UserObserver::class);
     }
 }

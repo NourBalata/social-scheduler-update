@@ -6,11 +6,11 @@
 
 <x-slot name="header">
     <div style="display:flex;align-items:center;gap:10px;">
-    <button onclick="document.getElementById('revenueModal').classList.add('open')"
+    {{-- <button onclick="document.getElementById('revenueModal').classList.add('open')"
         style="background:#f5f3ff;border:1px solid #e0e7ff;color:#7c3aed;font-size:13px;font-weight:600;padding:8px 16px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         {{ __('Revenue Analyzer')}}
-    </button>
+    </button> --}}
     <button id="openAddUserBtn" class="add-btn">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
         {{__('Add user')}}

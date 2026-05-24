@@ -18,14 +18,15 @@ class FacebookPageController extends Controller
             'page_access_token' => 'required|string',
         ]);
 
-        auth()->user()->facebookPages()->create([
-            'page_id'          => $request->page_id,
-            'page_name'        => $request->page_name,
-            'access_token'     => $request->page_access_token,
-            'is_active'        => true,
-            'token_expires_at' => now()->addDays(60),
-        ]);
-
+     auth()->user()->facebookPages()->updateOrCreate(
+    ['page_id' => $request->page_id],
+    [
+        'page_name'        => $request->page_name,
+        'access_token'     => $request->page_access_token,
+        'is_active'        => true,
+        'token_expires_at' => now()->addDays(60),
+    ]
+);
         return back()->with('success', 'Page linked successfully.');
     }
 }

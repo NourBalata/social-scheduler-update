@@ -133,5 +133,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications',           [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 });
-
+Route::middleware(['auth'])->group(function () {
+    Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::post('/plans/{plan}/subscribe', [PlanController::class, 'subscribe'])->name('plans.subscribe');
+    Route::post('/plans/cancel', [PlanController::class, 'cancel'])->name('plans.cancel');
+});
 require __DIR__ . '/auth.php';

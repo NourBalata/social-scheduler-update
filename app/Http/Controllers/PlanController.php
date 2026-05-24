@@ -12,14 +12,14 @@ class PlanController extends Controller
         private readonly StripeService $stripe
     ) {}
 
-    public function index()
-    {
-        $plans = Plan::where('active', true)->orderBy('price')->get();
-        $user  = auth()->user();
+ public function index()
+{
+    $plans = Plan::where('active', true)->orderBy('price')->get();
+    $user  = auth()->user();
+    $currentPlan = $user?->subscription?->plan ?? null;
 
-        return view('Plans.index', compact('plans', 'user'));
-    }
-
+    return view('Plans.index', compact('plans', 'user', 'currentPlan'));
+}
   
     public function subscribe(Plan $plan)
     {
