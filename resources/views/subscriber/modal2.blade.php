@@ -11,11 +11,11 @@
                 <span id="cal-time" style="font-size:13px;color:#9ca3af;"></span>
             </div>
             <div>
-                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Page</p>
+                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">{{__('Page')}}</p>
                 <p id="cal-page" style="font-size:14px;font-weight:600;color:#111827;"></p>
             </div>
             <div>
-                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Content</p>
+                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">{{__('Content)}}</p>
                 <p id="cal-content" style="font-size:13px;color:#374151;line-height:1.6;background:#f9fafb;border-radius:10px;padding:12px;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></p>
             </div>
         </div>

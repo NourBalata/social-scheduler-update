@@ -2,10 +2,13 @@
     "Dashboard":"لوحة التحكم",
     "Schedule Post": "جدولة منشور",
     "Content Calendar": "تقويم المحتوى",
+    
+  "Page ID":"هوية الصفحة",
     "Published": "منشور",
     "Failed": "فشل",
-    "Edit":"تعديل",
     "Save user":"حفظ المشترك",
+    "Edit":"تعديل",
+
     "New plan":"الخطة الجديدة",
     "Total Revenue":"مجموع الايرادات",
       "Monthly Average":"المعدل السنوي",

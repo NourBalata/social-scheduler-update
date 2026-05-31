@@ -16,8 +16,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 id="upModal-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0f1117;margin:0;">Upgrade Your Plan</h2>
-                        <p id="upModal-subtitle" style="font-size:13px;color:#9ca3af;margin:4px 0 0;">Unlock full access to all features</p>
+                        <h2 id="upModal-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#0f1117;margin:0;">{{ __('Upgrade Your Plan')}}</h2>
+                        <p id="upModal-subtitle" style="font-size:13px;color:#9ca3af;margin:4px 0 0;">{{ __('Unlock full access to all features')}}</p>
                     </div>
                 </div>
                 <button id="upModal-closeBtn" onclick="closeUpgradeModal()"

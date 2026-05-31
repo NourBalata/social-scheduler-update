@@ -8,12 +8,12 @@
         </div>
         <form action="{{ route('facebook.pages.store') }}" method="POST" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
             @csrf
-            <div><label class="dash-label">Page ID</label><input type="text" name="page_id" class="dash-input" placeholder="e.g. 123456789"></div>
-            <div><label class="dash-label">Page Name</label><input type="text" name="page_name" class="dash-input" placeholder="My Business Page"></div>
-            <div><label class="dash-label">Page Access Token</label><input type="text" name="page_access_token" class="dash-input" placeholder="EAAxxxxxx..."></div>
+            <div><label class="dash-label">{{ __('Page ID') }}</label><input type="text" name="page_id" class="dash-input" placeholder="{{ __('e.g')}}. 123456789"></div>
+            <div><label class="dash-label">{{ __('Page Name')}}</label><input type="text" name="page_name" class="dash-input" placeholder="{{ __('My Business Page')}}"></div>
+            <div><label class="dash-label">{{ __('Page Access Token')}}</label><input type="text" name="page_access_token" class="dash-input" placeholder="EAAxxxxxx..."></div>
             <div style="display:flex;gap:10px;padding-top:8px;border-top:1px solid #f3f4f6;">
-                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">Save Page</button>
-                <button type="button" id="cancelPageModalBtn" style="padding:12px 20px;border:1.5px solid #e5e7eb;border-radius:12px;font-weight:600;font-size:14px;color:#6b7280;cursor:pointer;background:#fff;">Cancel</button>
+                <button type="submit" class="btn-primary" style="flex:1;justify-content:center;">{{ __('Save Page')}}</button>
+                <button type="button" id="cancelPageModalBtn" style="padding:12px 20px;border:1.5px solid #e5e7eb;border-radius:12px;font-weight:600;font-size:14px;color:#6b7280;cursor:pointer;background:#fff;">{{ __('Cancel')}}</button>
             </div>
         </form>
     </div>

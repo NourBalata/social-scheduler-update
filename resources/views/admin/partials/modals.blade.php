@@ -16,7 +16,7 @@
                 <div class="grid-2">
                     <div><label class="field-label">{{ __('Password')}}</label><input type="password" name="password" required class="field-input" placeholder="Min 8 chars"></div>
                     <div>
-                        <label class="field-label">Plan</label>
+                        <label class="field-label">{{ __('Plan')}}</label>
                         <select name="plan_id" class="field-input" style="cursor:pointer;">
                             @foreach($plans as $plan)
                                 <option value="{{ $plan->id }}">{{ $plan->name }} — ${{ $plan->price }}</option>
@@ -26,7 +26,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn-save">{{ __('Save user')}}</button>
-                    <button type="button" class="btn-cancel-sm" onclick="closeModal('addUserModal')">Cancel</button>
+                    <button type="button" class="btn-cancel-sm" onclick="closeModal('addUserModal')">{{ __('Cancel')}}</button>
                 </div>
             </div>
         </form>
@@ -48,7 +48,7 @@
                 <label class="field-label">{{__('New plan')}}</label>
                 <select id="changePlanSelect" class="field-input" style="cursor:pointer;">
                     @foreach($plans as $plan)
-                        <option value="{{ $plan->id }}">{{ $plan->name }} — ${{ $plan->price }}/mo</option>
+                        <option value="{{ $plan->id }}">{{  __($plan->name )}} — ${{ $plan->price }}/mo</option>
                     @endforeach
                 </select>
             </div>
@@ -57,8 +57,8 @@
                 <input type="date" id="changePlanExpiry" class="field-input" min="{{ now()->toDateString() }}">
             </div>
             <div class="modal-footer">
-                <button class="btn-save" onclick="submitChangePlan()">Update plan</button>
-                <button class="btn-cancel-sm" onclick="closeModal('changePlanModal')">Cancel</button>
+                <button class="btn-save" onclick="submitChangePlan()">{{ __('Update plan')}}</button>
+                <button class="btn-cancel-sm" onclick="closeModal('changePlanModal')">{{ __('No update')}}</button>
             </div>
         </div>
     </div>

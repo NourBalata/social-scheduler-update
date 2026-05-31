@@ -34,7 +34,6 @@
 <h2 class="text-2xl font-semibold tracking-tight text-slate-900">{{ __('Dashboard') }}</h2>
 
 
-    <!-- 🔔 Notification Bell -->
     <div class="relative" id="notifWrapper">
         <button onclick="toggleNotifications()" class="relative p-2 text-gray-500 hover:text-gray-700 focus:outline-none">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

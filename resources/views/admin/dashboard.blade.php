@@ -17,7 +17,7 @@
     </button>
     <form method="POST" action="{{ route('logout') }}">
         @csrf
-        <button type="submit" style="background:none;border:1px solid #fecaca;color:#ef4444;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;">Logout</button>
+        <button type="submit" style="background:none;border:1px solid #fecaca;color:#ef4444;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;">{{ __('Logout')}}</button>
     </form>
              <div style="display:flex;gap:8px;">
     <form method="POST" action="{{ route('lang.switch', 'ar') }}">

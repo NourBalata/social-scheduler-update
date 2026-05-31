@@ -1,4 +1,6 @@
 {
+  "Page ID":"هوية الصفحة",
+ "Save user":"حفظ امشترك",
     "Dashboard": "لوحة التحكم",
     "Log Out": "تسجيل الخروج",
     "Profile": "الملف الشخصي",
@@ -7,6 +9,13 @@
 "Posts used this month":"البوستات المنشورة خلال الشهر",
 "TOTAL REVENUE":"مجموع الإيرادات",
 "Enterprise": "متقدم",
+"Save Page":"حفظ اصفحة",
+"Upgrade Your Plan":"ترفيع الخطة",
+"No update":"لا تحذف",
+"Page Name":"اسم الصفحة",
+"Page Access Token":"الربط بالصفحة التوكن",
+"Slug":"اسم إضافي",
+"Price ($/mo)":"السعر(دولار/شهريا)",
 "months":"أشهر",
 "AI Fiscal Analysis":"تحليل المالي للاي ايه",
 

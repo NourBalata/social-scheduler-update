@@ -1,7 +1,7 @@
 <div id="mediaLibraryModal" class="ml-modal-backdrop" dir="ltr">
     <div class="ml-modal-inner">
 
-        {{-- Header --}}
+
         <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #f3f4f6;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;">

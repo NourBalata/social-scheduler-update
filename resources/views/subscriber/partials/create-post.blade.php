@@ -22,7 +22,7 @@
                 <div>
                     <label class="dash-label">{{ __('Select Page')}}</label>
                     <select name="facebook_page_id" class="dash-input">
-                        <option value="">{{ __('— Choose a page —')}}</option>
+                        <option value="">— {{ __('Choose a page')}} —</option>
                         @foreach($user->facebookPages as $page)
                             <option value="{{ $page->id }}" {{ old('facebook_page_id') == $page->id ? 'selected' : '' }}>
                                 {{ $page->page_name }}
