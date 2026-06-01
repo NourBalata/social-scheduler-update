@@ -38,6 +38,17 @@ class SubscriberDashboardController extends Controller
                 ],
             ]);
 
-        return view('subscriber.dashboard', compact('pages', 'events', 'user', 'expiredPages', 'expiringPages'));
+      $repostRules = \App\Models\RepostRule::with(['user', 'facebookPage', 'originalPost'])
+    ->where('user_id', $user->id)
+    ->latest()
+    ->get();
+
+$publishedPosts = \App\Models\ScheduledPost::with(['user', 'facebookPage'])
+    ->where('user_id', $user->id)
+    ->where('status', 'published')
+    ->latest('published_at')
+    ->take(50)
+    ->get();
+        return view('subscriber.dashboard', compact('pages', 'events', 'user', 'expiredPages', 'expiringPages','repostRules','publishedPosts'));
     }
 }

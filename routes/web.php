@@ -31,7 +31,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::post('/plans',         [AdminUserController::class, 'storePlan'])->name('plans.store');
     Route::patch('/plans/{plan}', [AdminUserController::class, 'updatePlanDetails'])->name('plans.update');
-});
+
+
+ Route::post('/repost-rules',               [RepostRuleController::class, 'store'])->name('repost-rules.store');
+    Route::post('/repost-rules/{rule}/toggle', [RepostRuleController::class, 'toggle'])->name('repost-rules.toggle');
+    Route::delete('/repost-rules/{rule}',      [RepostRuleController::class, 'destroy'])->name('repost-rules.destroy');
+
+
+    });
 
 Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
 
@@ -138,4 +145,18 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/plans/{plan}/subscribe', [PlanController::class, 'subscribe'])->name('plans.subscribe');
     Route::post('/plans/cancel', [PlanController::class, 'cancel'])->name('plans.cancel');
 });
+
+// Route::post('/repost-rules', [RepostRuleController::class, 'store'])->name('repost-rules.store');
+// Route::post('/repost-rules/{rule}/toggle', [RepostRuleController::class, 'toggle'])->name('repost-rules.toggle');
+// Route::delete('/repost-rules/{rule}', [RepostRuleController::class, 'destroy'])->name('repost-rules.destroy');
+
+Route::post('/repost-rules',               [\App\Http\Controllers\RepostRuleController::class, 'store'])->name('user.repost-rules.store');
+Route::post('/repost-rules/{rule}/toggle', [\App\Http\Controllers\RepostRuleController::class, 'toggle'])->name('user.repost-rules.toggle');
+Route::delete('/repost-rules/{rule}',      [\App\Http\Controllers\RepostRuleController::class, 'destroy'])->name('user.repost-rules.destroy');
+
+
+
+// Route::post('/repost-rules',              [RepostRuleController::class, 'store'])->name('repost-rules.store');
+// Route::post('/repost-rules/{rule}/toggle',[RepostRuleController::class, 'toggle'])->name('repost-rules.toggle');
+// Route::delete('/repost-rules/{rule}',     [RepostRuleController::class, 'destroy'])->name('repost-rules.destroy');
 require __DIR__ . '/auth.php';

@@ -32,6 +32,7 @@
             English
         </button>
     </form>
+ 
 </div>
 </div>
 </x-slot>
@@ -41,10 +42,12 @@
     @include('admin.partials.charts')
     @include('admin.partials.plans')
     @include('admin.partials.users')
+
 </div>
 
   
 @include('admin.partials.modals')
+
 @include('admin.partials.scripts')
 
 

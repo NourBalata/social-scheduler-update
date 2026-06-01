@@ -59,8 +59,9 @@ class AdminUserController extends Controller
             'price' => $plan->price,
         ]);
 
+
         return view('admin.dashboard', compact(
-            'users', 'plans', 'stats', 'revenueChart', 'plansBreakdown'
+            'users', 'plans', 'stats', 'revenueChart', 'plansBreakdown' 
         ));
     }
 

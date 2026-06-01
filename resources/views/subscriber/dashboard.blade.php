@@ -1,5 +1,5 @@
 <x-app-layout>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <x-slot name="header">
     <div style="display:flex;align-items:center;justify-content:space-between;" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
         <span class="brand" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
@@ -30,6 +30,10 @@
             English
         </button>
     </form>
+
+       <button onclick="openModal('publishedPostsModal')" class="add-btn" style="background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0;">
+    📋 {{ __('Published Posts') }}
+</button>
 </div>
         </div>
     </div>
@@ -157,6 +161,8 @@
 <div id="vue-app">
     @include('subscriber.partials.modals.autopilot')
     @include('subscriber.partials.modals.dateclick')
+    @include('subscriber.partials.published-posts-modal')
+        @include('subscriber.partials.reposts')
 </div>
 
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:12px 22px;border-radius:99px;font-size:13px;font-weight:600;pointer-events:none;opacity:0;transition:all .3s;z-index:99999;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.2);"></div>
