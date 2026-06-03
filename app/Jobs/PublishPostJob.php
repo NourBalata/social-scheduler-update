@@ -2,47 +2,36 @@
 
 namespace App\Jobs;
 
-use App\Models\ScheduledPost;
 use App\Contracts\SocialMediaProvider;
+use App\Models\ScheduledPost;
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
-class PublishPostJob implements ShouldQueue, ShouldBeUnique
+
+class PublishPostJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $tries   = 3;
-    public $backoff = [60, 120, 300];
-    public $timeout = 120;
+    public int   $tries   = 3;
+    public array $backoff = [60, 120, 300];
+    public int   $timeout = 120;
 
-
-    public int $uniqueFor = 660; 
-
-    protected $post;
-
-    public function __construct(ScheduledPost $post)
-    {
-        $this->post = $post;
-    }
-
-    public function uniqueId(): string
-    {
-        return 'publish-post-' . $this->post->id;
-    }
+    public function __construct(
+        protected ScheduledPost $post
+    ) {}
 
     public function handle(SocialMediaProvider $facebookService): void
     {
-       
+    
         $claimed = DB::transaction(function () {
             $post = ScheduledPost::lockForUpdate()->find($this->post->id);
 
-            if (!$post || $post->status !== 'pending') {
+            if (! $post || $post->status !== 'pending') {
                 return false;
             }
 
@@ -50,18 +39,18 @@ class PublishPostJob implements ShouldQueue, ShouldBeUnique
             return true;
         });
 
-        if (!$claimed) {
-            return; 
+        if (! $claimed) {
+            return;
         }
 
-        
-        $post = $this->post->fresh();
+
+        $post = ScheduledPost::with('facebookPage')->find($this->post->id);
 
         try {
             $page = $post->facebookPage;
 
-            if (!$page || !$page->isTokenValid()) {
-                throw new Exception("Token not valid.");
+            if (! $page || ! $page->isTokenValid()) {
+                throw new Exception('Facebook page token is missing or expired.');
             }
 
             $fbPostId = $facebookService->post(
@@ -76,20 +65,23 @@ class PublishPostJob implements ShouldQueue, ShouldBeUnique
             $post->markAsPublished($fbPostId);
 
         } catch (Exception $e) {
-            $post->markAsFailed($e->getMessage());
-            throw $e; 
+
+            $post->update(['status' => 'pending', 'error_message' => $e->getMessage()]);
+            throw $e;
         }
     }
 
- public function failed(Exception $exception): void
-{
-    $post = $this->post->fresh();
-    if ($post && $post->status === 'processing') {
-        $post->markAsFailed('Job failed after all retries: ' . $exception->getMessage());
+    public function failed(Exception $exception): void
+    {
 
-      
-        $post->user->notify(new \App\Notifications\PostFailedNotification($post));
-    }
+        $post = ScheduledPost::with('user')->find($this->post->id);
 
+        if (! $post) {
+            return;
+        }
+
+        $post->markAsFailed('Failed after all retries: ' . $exception->getMessage());
+
+        $post->user?->notify(new \App\Notifications\PostFailedNotification($post));
     }
 }

@@ -26,7 +26,9 @@ class User extends Authenticatable
         'stripe_status',
     ];
 
-    protected $with = ['currentPlan', 'facebookPages'];
+    // تمت إزالة $with العامة — كانت تجيب currentPlan و facebookPages في كل query
+    // حتى لما ما نحتاجهم (مثلاً في الـ admin stats أو الـ notifications)
+    // الحل: نستخدم ->with([...]) بشكل صريح في كل controller يحتاجها
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -153,4 +155,9 @@ public function posts(): HasMany
     {
         return $this->stripe_status === 'past_due';
     }
+
+public function sallaAccount()
+{
+    return $this->hasOne(\App\Models\SallaAccount::class);
+}
 }

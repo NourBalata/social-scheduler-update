@@ -92,7 +92,7 @@
                 <label for="planModalActive" class="field-label" style="margin:0;">{{__('Active')}}</label>
             </div>
             <div class="modal-footer">
-                <button class="btn-save" onclick="submitPlan()">{{__('Save plan')}}</button>
+                <button class="btn-save" onclick="submitPlan()">{{ __('Save plan')}}</button>
                 <button class="btn-cancel-sm" onclick="closeModal('planModal')">{{__('Cancel')}}</button>
             </div>
         </div>

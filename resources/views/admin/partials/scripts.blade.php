@@ -108,11 +108,13 @@ function openPlanModal() {
     openModal('planModal');
 }
 
-function editPlan(id, name, price, posts, pages, stripeId, active) {
+function editPlan(id, name, slug, price, posts, pages, stripeId, active) {
     document.getElementById('planModalTitle').textContent = `${trans.edit} — ${name}`;
     document.getElementById('planModalId').value          = id;
     document.getElementById('planModalName').value        = name;
     document.getElementById('planModalName').readOnly     = true;
+    document.getElementById('planModalSlug').value        = slug;
+    document.getElementById('planModalSlug').readOnly     = true;
     document.getElementById('planModalPrice').value       = price;
     document.getElementById('planModalStripeId').value    = stripeId || '';
     document.getElementById('planModalPosts').value       = posts;
@@ -123,9 +125,12 @@ function editPlan(id, name, price, posts, pages, stripeId, active) {
 
 function submitPlan() {
     const id = document.getElementById('planModalId').value;
+    const isEdit = !!id;
     const body = {
-        name:            document.getElementById('planModalName').value,
-        slug:            document.getElementById('planModalSlug').value,
+        ...(!isEdit && {
+            name: document.getElementById('planModalName').value,
+            slug: document.getElementById('planModalSlug').value,
+        }),
         price:           document.getElementById('planModalPrice').value,
         stripe_price_id: document.getElementById('planModalStripeId').value,
         posts_limit:     document.getElementById('planModalPosts').value,
@@ -136,7 +141,7 @@ function submitPlan() {
     const url = id ? `/admin/plans/${id}` : '/admin/plans';
 
     fetch(url, {
-        method: 'POST',
+        method: id ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
         body: JSON.stringify(body),
     })

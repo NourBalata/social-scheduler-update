@@ -14,14 +14,14 @@
                 @csrf
                 <button type="submit" class="logout-btn">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    Logout
+                    {{ __('Logout')}}
                 </button>
             </form>
             <div style="display:flex;gap:8px;">
     <form method="POST" action="{{ route('lang.switch', 'ar') }}">
         @csrf
         <button type="submit" style="padding:6px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:{{ app()->getLocale() === 'ar' ? '#2563eb' : '#fff' }};color:{{ app()->getLocale() === 'ar' ? '#fff' : '#374151' }};font-weight:700;cursor:pointer;">
-          عربي
+          {{ __('Arabic')}}
         </button>
     </form>
     <form method="POST" action="{{ route('lang.switch', 'en') }}">
@@ -118,21 +118,7 @@
         </div>
         @endif
 
-        @if($expiringPages->isNotEmpty())
-        <div style="background:#fff3cd;border:1.5px solid #fcd34d;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
-            <span style="font-size:22px;">⚠️</span>
-            <div>
-                <p style="font-size:14px;font-weight:700;color:#92400e;margin:0;">
-                    Token expiring soon for:
-                    <strong>{{ $expiringPages->pluck('page_name')->join(', ') }}</strong>
-                </p>
-                <p style="font-size:12px;color:#b45309;margin:4px 0 0;">
-                    Please reconnect before it expires to avoid interruptions.
-                    <a href="{{ route('facebook.redirect') }}" style="color:#92400e;font-weight:700;text-decoration:underline;">Reconnect now →</a>
-                </p>
-            </div>
-        </div>
-        @endif
+     
 
         @include('subscriber.partials.stats')
         @include('subscriber.partials.subscription')
@@ -143,6 +129,7 @@
                 @include('subscriber.partials.autopilot-banner')
                 @include('subscriber.partials.create-post')
                 @include('subscriber.partials.bulk-csv')
+                @include('subscriber.partials.modals.salla')
             </div>
         </div>
 

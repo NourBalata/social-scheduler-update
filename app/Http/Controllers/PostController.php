@@ -132,8 +132,9 @@ $post = ScheduledPost::create([
     'status'           => 'pending',
 ]);
 
-                
-                PublishPostJob::dispatch($post);
+                // Delay the job until the scheduled time (same pattern as AutopilotController)
+                $delaySeconds = max(0, now()->diffInSeconds($publishDate, false));
+                PublishPostJob::dispatch($post)->delay($delaySeconds);
 
                 $count++;
 

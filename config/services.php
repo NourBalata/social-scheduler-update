@@ -22,6 +22,12 @@ return [
         'redirect'      => env('FACEBOOK_REDIRECT_URI'),
     ],
 
+    'salla' => [
+        'client_id'     => env('SALLA_CLIENT_ID'),
+        'client_secret' => env('SALLA_CLIENT_SECRET'),
+        'redirect'      => env('SALLA_REDIRECT_URI'),
+    ],
+
     
 'gemini' => [
     'keys' => [

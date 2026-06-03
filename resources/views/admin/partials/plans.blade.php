@@ -20,7 +20,7 @@
             <div class="plan-meta" style="margin-top:3px;font-size:11px;color:#9ca3af;">{{ $plan->stripe_price_id }}</div>
         @endif
         <div class="plan-actions">
-            <button class="plan-edit-btn" onclick="editPlan({{ $plan->id }}, '{{ __('plans.' . $plan->slug) }}', {{ $plan->price }}, {{ $plan->posts_limit }}, {{ $plan->pages_limit }}, '{{ $plan->stripe_price_id }}', {{ $plan->active ? 'true' : 'false' }})">{{ __('Edit')}}</button>
+            <button class="plan-edit-btn" onclick="editPlan({{ $plan->id }}, '{{ __('plans.' . $plan->slug) }}', '{{ $plan->slug }}', {{ $plan->price }}, {{ $plan->posts_limit }}, {{ $plan->pages_limit }}, '{{ $plan->stripe_price_id }}', {{ $plan->active ? 'true' : 'false' }})">{{ __('Edit')}}</button>
             <span style="font-size:12px;color:#6b7280;padding:5px 0;">{{ $plansBreakdown->firstWhere('name', $plan->name)['count'] ?? 0 }} {{ __('users')}}</span>
         </div>
     </div>

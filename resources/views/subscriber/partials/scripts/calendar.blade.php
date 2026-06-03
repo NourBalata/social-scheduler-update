@@ -19,9 +19,7 @@ document.getElementById('stat-scheduled').textContent = events.filter(e => e.ext
 document.getElementById('stat-published').textContent = events.filter(e => e.extendedProps?.status === 'published').length;
 
 let calendarInstance = null;
-let _currentPostId   = null; // postId اللي فاتح الـ modal حالياً
-
-// ── تهيئة الكليندر بعد تحميل الصفحة كاملة ──────────────────────────────────
+let _currentPostId   = null; 
 window.addEventListener('load', () => {
     calendarInstance = new FullCalendar.Calendar(document.getElementById('fc-calendar'), {
         initialView:   'dayGridMonth',
@@ -40,7 +38,7 @@ window.addEventListener('load', () => {
                  : typeColors[e.extendedProps?.post_type]  || '#3b82f6',
         })),
 
-        // ── Drag & Drop ──────────────────────────────────────────────────────
+       
         eventDrop(info) {
             const newDate = info.event.start;
 
@@ -67,7 +65,7 @@ window.addEventListener('load', () => {
             .catch(() => { info.revert(); showToast('❌ Connection error.'); });
         },
 
-        // ── Click على منشور ──────────────────────────────────────────────────
+       
         eventClick(info) {
             const p      = info.event.extendedProps;
             const status = p.status ?? 'pending';
@@ -75,7 +73,7 @@ window.addEventListener('load', () => {
 
             _currentPostId = postId;
 
-            // Status Badge
+           
             const colorMap = {
                 published: 'background:#d1fae5;color:#065f46',
                 failed:    'background:#fee2e2;color:#991b1b',
@@ -85,7 +83,7 @@ window.addEventListener('load', () => {
             badge.style.cssText = `font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;${colorMap[status] ?? colorMap.pending}`;
             badge.textContent   = status;
 
-            // Type Badge
+           
             const typeBadge = document.getElementById('cal-type-badge');
             if (p.post_type && p.post_type !== 'manual') {
                 typeBadge.style.cssText = `font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;background:${typeColors[p.post_type]}20;color:${typeColors[p.post_type]};display:inline-block;`;
@@ -94,12 +92,12 @@ window.addEventListener('load', () => {
                 typeBadge.style.display = 'none';
             }
 
-            // بيانات البوست
+           
             document.getElementById('cal-time').textContent    = info.event.start?.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) ?? '';
             document.getElementById('cal-page').textContent    = p.page ?? '—';
             document.getElementById('cal-content').textContent = p.content ?? '';
 
-            // Retry Section
+          
             const retrySection = document.getElementById('cal-retry-section');
             const analyzing    = document.getElementById('cal-retry-analyzing');
             const retryResult  = document.getElementById('cal-retry-result');
@@ -113,7 +111,7 @@ window.addEventListener('load', () => {
 
                 document.getElementById('calModal').classList.replace('hidden', 'flex');
 
-                // GET /posts/{post}/retry/analyze
+              
                 fetch(`/posts/${postId}/retry/analyze`, {
                     method:  'GET',
                     headers: { 'X-CSRF-TOKEN': CSRF },
@@ -162,7 +160,7 @@ window.addEventListener('load', () => {
     calendarInstance.render();
 });
 
-// ── تشغيل الـ Fix ─────────────────────────────────────────────────────────────
+
 function runFix(postId, fixType) {
     const fixBtn       = document.getElementById('cal-fix-btn');
     fixBtn.disabled    = true;

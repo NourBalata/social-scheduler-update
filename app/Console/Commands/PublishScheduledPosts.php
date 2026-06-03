@@ -13,24 +13,24 @@ class PublishScheduledPosts extends Command
 
     public function handle(): int
     {
-        $posts = ScheduledPost::ready()
+        $dispatched = 0;
+
+        // chunk(100) بدل ->get() — يمنع تحميل آلاف الـ records في الذاكرة دفعة
+        ScheduledPost::ready()
             ->with('facebookPage')
-            ->get();
+            ->chunkById(100, function ($posts) use (&$dispatched) {
+                foreach ($posts as $post) {
+                    // jitter عشوائي 0-55 ثانية لتوزيع الـ load على Facebook API
+                    // ومنع hitting rate limit لو في كثير منشورات في نفس الدقيقة
+                    $jitter = rand(0, 55);
+                    PublishPostJob::dispatch($post)->delay(now()->addSeconds($jitter));
+                    $dispatched++;
+                }
+            });
 
-        if ($posts->isEmpty()) {
-            $this->info('No posts due for publishing.');
-            return self::SUCCESS;
-        }
-
-        $this->info("Dispatching {$posts->count()} post(s)...");
-
-        foreach ($posts as $post) {
-   $jitter = rand(0, 55);
-   PublishPostJob::dispatch($post)->delay(now()->addSeconds($jitter));
-            $this->line("  → Dispatched post #{$post->id}");
-        }
-
-        $this->info('Done.');
+        $dispatched > 0
+            ? $this->info("Dispatched {$dispatched} post(s).")
+            : $this->info('No posts due for publishing.');
 
         return self::SUCCESS;
     }

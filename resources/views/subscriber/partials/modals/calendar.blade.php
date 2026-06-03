@@ -3,7 +3,7 @@
 
    
         <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;position:sticky;top:0;background:#fff;z-index:1;">
-            <h3 style="font-family:'Syne',sans-serif;font-weight:800;color:#0f1117;">Post Details</h3>
+            <h3 style="font-family:'Syne',sans-serif;font-weight:800;color:#0f1117;">{{__('Post Details')}}</h3>
             <button onclick="closeCalModal()" style="color:#9ca3af;border:none;background:none;cursor:pointer;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -11,7 +11,6 @@
 
         <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
 
-            {{-- Status & Time --}}
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                 <span id="cal-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;"></span>
                 <span id="cal-type-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;display:none;"></span>
@@ -20,13 +19,13 @@
 
      
             <div>
-                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Page</p>
+                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">{{__('Page')}}</p>
                 <p id="cal-page" style="font-size:14px;font-weight:600;color:#111827;"></p>
             </div>
 
            
             <div>
-                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Content</p>
+                <p style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">{{ __('Content')}}</p>
                 <p id="cal-content" style="font-size:13px;color:#374151;line-height:1.6;background:#f9fafb;border-radius:10px;padding:12px;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></p>
             </div>
 
@@ -37,7 +36,7 @@
                     <svg style="animation:spin 1s linear infinite;width:24px;height:24px;display:inline-block;margin-bottom:8px;" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2">
                         <circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20" stroke-linecap="round"/>
                     </svg>
-                    <p style="margin:0;">AI is analyzing the error...</p>
+                    <p style="margin:0;">{{ __('AI is analyzing the error...')}}</p>
                 </div>
 
         
@@ -59,11 +58,12 @@
                         </div>
                     </div>
 
-                    {{-- Token Update Form (يظهر فقط لما fix = reconnect_page) --}}
+                  
                     <div id="cal-token-form" style="display:none;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:14px;">
                         <p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 4px;">🔑 Update Page Token Directly</p>
                         <p style="font-size:11px;color:#b45309;margin:0 0 10px;line-height:1.5;">
-                            روح على Facebook Developer → احصل على Page Access Token الجديد والصقه هون
+                            Rest New Page Access Token
+                          
                         </p>
 
                         <input

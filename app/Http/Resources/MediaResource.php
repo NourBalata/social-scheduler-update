@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// app/Http/Resources/MediaResource.php
-// ============================================================
+
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;

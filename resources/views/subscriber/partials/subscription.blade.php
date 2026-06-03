@@ -13,7 +13,7 @@
                 <p style="font-size:16px;font-weight:800;color:#111827;margin:0;font-family:'Syne',sans-serif;">
               {{ __($plan?->name ?? 'No Plan') }}
                     @if(!$isFree && $plan)
-                        <span style="font-size:13px;font-weight:600;color:#6b7280;">— ${{ number_format($plan->price, 0) }}/mo</span>
+                        <span style="font-size:13px;font-weight:600;color:#6b7280;">— ${{ number_format($plan->price, 0) }}/{{ __('mo')}}</span>
                     @endif
                 </p>
             </div>
@@ -117,7 +117,7 @@
                style="padding:11px 14px;border:1.5px solid #e5e7eb;color:#9ca3af;font-size:12px;font-weight:600;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:5px;transition:all .15s;background:#fff;"
                onmouseover="this.style.color='#374151';this.style.background='#f9fafb'" onmouseout="this.style.color='#9ca3af';this.style.background='#fff'">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                Invoices
+                {{ __('Invoices')}}
             </a>
         @endif
     </div>
