@@ -160,4 +160,10 @@ public function sallaAccount()
 {
     return $this->hasOne(\App\Models\SallaAccount::class);
 }
+
+// alias — بعض الـ views بتستخدمها بهالاسم
+public function sallaStore()
+{
+    return $this->hasOne(\App\Models\SallaAccount::class);
+}
 }

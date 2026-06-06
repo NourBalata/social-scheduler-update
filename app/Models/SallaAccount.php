@@ -18,4 +18,9 @@ class SallaAccount extends Model
 
     public function user()     { return $this->belongsTo(User::class); }
     public function products() { return $this->hasMany(SallaProduct::class); }
+
+    public function isTokenExpired(): bool
+    {
+        return $this->token_expires_at !== null && $this->token_expires_at->isPast();
+    }
 }

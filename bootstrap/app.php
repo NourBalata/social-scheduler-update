@@ -21,7 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Http\Middleware\HandleInertiaRequests::class,
     ]);
 
-  
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/salla',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

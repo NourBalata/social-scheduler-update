@@ -215,7 +215,7 @@ let sallaSearchTimer     = null;
 
 const SALLA_CSRF          = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 const SALLA_PRODUCTS_URL  = "{{ route('salla.products') }}";
-const SALLA_GENERATE_URL  = "{{ route('salla.generate-post') }}";
+const SALLA_GENERATE_URL = "{{ route('generate-caption') }}";
 const SALLA_SCHEDULE_URL  = "{{ route('salla.schedule-post') }}";
 
 // ── Open / Close ──────────────────────────────────────────────────────────

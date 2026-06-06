@@ -377,11 +377,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
  
     document.getElementById('openPageModalBtnQuick')?.addEventListener('click', () =>
-        document.getElementById('pageModal').classList.replace('hidden','flex'));
+        document.getElementById('pageModal')?.classList.replace('hidden','flex'));
     document.getElementById('closePageModalBtn')?.addEventListener('click', () =>
-        document.getElementById('pageModal').classList.replace('flex','hidden'));
+        document.getElementById('pageModal')?.classList.replace('flex','hidden'));
     document.getElementById('cancelPageModalBtn')?.addEventListener('click', () =>
-        document.getElementById('pageModal').classList.replace('flex','hidden'));
+        document.getElementById('pageModal')?.classList.replace('flex','hidden'));
 });
 
 function openModal(id) {

@@ -11,10 +11,10 @@
 
         
             <div style="background:#0f1117;padding:28px 24px;min-width:190px;display:flex;flex-direction:column;gap:8px;">
-                <p style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin:0;">Social Scheduler</p>
+                <p style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin:0;">{{ __('Social Scheduler')}}</p>
                 <p id="pay-plan-name" style="font-size:20px;font-weight:800;color:#fff;margin:0;font-family:'Syne',sans-serif;"></p>
                 <p id="pay-plan-price-big" style="font-size:32px;font-weight:800;color:#fff;margin:0;"></p>
-                <p style="font-size:12px;color:#6b7280;margin:0;">per month</p>
+                <p style="font-size:12px;color:#6b7280;margin:0;">{{ __('per month')}}</p>
                 <div style="border-top:1px solid #1f2937;margin:12px 0;"></div>
                 <div style="display:flex;justify-content:space-between;">
                     <span style="font-size:12px;color:#9ca3af;" id="pay-summary-label"></span>
@@ -56,7 +56,7 @@
                            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#d1d5db'">
                 </div>
 
-                {{-- Card Number --}}
+
                 <div style="margin-bottom:0;">
                     <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">{{ __('Card information')}}</label>
                     <div style="border:1.5px solid #d1d5db;border-radius:10px;overflow:hidden;">
@@ -79,7 +79,7 @@
                     </div>
                 </div>
 
-                {{-- Name --}}
+       
                 <div style="margin-top:16px;margin-bottom:20px;">
                     <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">{{ __('Name on card')}}</label>
                     <input type="text" id="pay-name" placeholder="Full name"
@@ -87,14 +87,14 @@
                            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#d1d5db'">
                 </div>
 
-                {{-- Error --}}
+         
                 <div id="pay-error" style="display:none;background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;margin-bottom:12px;"></div>
 
-                {{-- Submit Button --}}
+
                 <button id="pay-submit-btn" onclick="submitPayment()"
                         style="width:100%;padding:13px;background:#6772e5;color:#fff;font-size:14px;font-weight:700;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;"
                         onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
-                    <span id="pay-btn-text">{{ __('Subscribe')}} — <span id="pay-btn-price"></span> / month</span>
+                    <span id="pay-btn-text">{{ __('Subscribe')}} — <span id="pay-btn-price"></span> / {{ __('month')}}</span>
                     <svg id="pay-spinner" style="display:none;animation:spin 1s linear infinite;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20" stroke-linecap="round"/></svg>
                 </button>
 

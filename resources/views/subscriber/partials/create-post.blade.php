@@ -17,7 +17,7 @@
             </div>
             <input type="hidden" name="post_type" id="post_type_hidden" value="image">
 
-            {{-- Page & Schedule --}}
+          
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
                 <div>
                     <label class="dash-label">{{ __('Select Page')}}</label>
@@ -38,7 +38,6 @@
                 </div>
             </div>
 
-            {{-- Media Section --}}
             <div id="mediaSection" style="margin-bottom:20px;">
                 <label class="dash-label">{{ __('Post Media')}}</label>
 
@@ -71,7 +70,7 @@
                 <input type="hidden" name="media_library_id" id="mediaLibraryId">
             </div>
 
-            {{-- Content --}}
+           
             <div style="margin-bottom:20px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <label class="dash-label" style="margin:0;">{{ __('Post Content')}}</label>
@@ -98,7 +97,6 @@
                 </div>
             </div>
 
-            {{-- Submit --}}
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
                 <button type="submit" class="btn-primary">
                     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
@@ -122,7 +120,6 @@
 
     <div style="background:#fff;border:1.5px solid #e4e6ea;border-radius:12px;overflow:hidden;max-width:500px;margin:0 auto;font-family:'Segoe UI',sans-serif;">
 
-        {{-- Header --}}
         <div style="padding:12px 16px;display:flex;align-items:center;gap:10px;">
             <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V10h2v6zm4 0h-2v-4c0-.55-.45-1-1-1s-1 .45-1 1v4h-2v-6h2v1.1c.4-.66 1.17-1.1 2-1.1 1.66 0 3 1.34 3 3v3z"/></svg>
@@ -137,18 +134,15 @@
             </div>
         </div>
 
-        {{-- Content --}}
         <div style="padding:0 16px 12px;">
             <p id="preview_content" style="font-size:14px;color:#1c1e21;line-height:1.6;margin:0;white-space:pre-wrap;word-break:break-word;">{{ __('Your post content will appear here')}}...</p>
         </div>
 
-        {{-- Media --}}
         <div id="preview_media_container" style="display:none;">
             <img id="preview_media_img" src="" style="width:100%;max-height:300px;object-fit:cover;display:none;">
             <video id="preview_media_vid" src="" style="width:100%;max-height:300px;display:none;" muted playsinline controls></video>
         </div>
 
-        {{-- Actions --}}
         <div style="padding:8px 16px;border-top:1px solid #e4e6ea;display:flex;justify-content:space-around;">
             <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;border:none;background:none;cursor:pointer;color:#65676b;font-size:13px;font-weight:600;border-radius:4px;" onmouseover="this.style.background='#f2f2f2'" onmouseout="this.style.background='none'">
                 👍 {{ __('Like')}}
