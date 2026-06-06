@@ -17,7 +17,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostTemplateController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AIController;
-use App\Http\Controllers\SallaController;
 use App\Http\Controllers\LeadFormController;
 
 Route::get('/', fn () => view('auth.login'));
@@ -143,25 +142,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-// ── Billing ───────────────────────────────────────────────────────────────────
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
     Route::post('/plans/{plan}/subscribe', [PlanController::class, 'subscribe'])->name('plans.subscribe');
     Route::post('/plans/cancel', [PlanController::class, 'cancel'])->name('plans.cancel');
 });
 
-// ── Repost Rules ──────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/repost-rules',               [\App\Http\Controllers\RepostRuleController::class, 'store'])->name('repost-rules.store');
-    Route::post('/repost-rules/{rule}/toggle', [\App\Http\Controllers\RepostRuleController::class, 'toggle'])->name('repost-rules.toggle');
-    Route::delete('/repost-rules/{rule}',      [\App\Http\Controllers\RepostRuleController::class, 'destroy'])->name('repost-rules.destroy');
-});
+// Route::post('/repost-rules', [RepostRuleController::class, 'store'])->name('repost-rules.store');
+// Route::post('/repost-rules/{rule}/toggle', [RepostRuleController::class, 'toggle'])->name('repost-rules.toggle');
+// Route::delete('/repost-rules/{rule}', [RepostRuleController::class, 'destroy'])->name('repost-rules.destroy');
 
-// ── Salla Webhook (بدون auth، بدون CSRF) ─────────────────────────────────────
+Route::post('/repost-rules',               [\App\Http\Controllers\RepostRuleController::class, 'store'])->name('user.repost-rules.store');
+Route::post('/repost-rules/{rule}/toggle', [\App\Http\Controllers\RepostRuleController::class, 'toggle'])->name('user.repost-rules.toggle');
+Route::delete('/repost-rules/{rule}',      [\App\Http\Controllers\RepostRuleController::class, 'destroy'])->name('user.repost-rules.destroy');
+
+// Salla Webhook — خارج auth وخارج CSRF
 Route::post('/webhooks/salla', [\App\Http\Controllers\SallaWebhookController::class, 'handle'])
     ->name('webhooks.salla');
 
-// ── Salla (auth + verified) ───────────────────────────────────────────────────
+// Salla Routes — داخل auth
 Route::middleware(['auth', 'verified'])->prefix('salla')->name('salla.')->group(function () {
     Route::get('/redirect',          [\App\Http\Controllers\SallaController::class, 'redirect'])->name('redirect');
     Route::get('/callback',          [\App\Http\Controllers\SallaController::class, 'callback'])->name('callback');
@@ -170,9 +170,9 @@ Route::middleware(['auth', 'verified'])->prefix('salla')->name('salla.')->group(
     Route::post('/toggle-auto-post', [\App\Http\Controllers\SallaController::class, 'toggleAutoPost'])->name('toggle-auto-post');
     Route::delete('/disconnect',     [\App\Http\Controllers\SallaController::class, 'disconnect'])->name('disconnect');
 
-   Route::post('/generate-caption', [\App\Http\Controllers\SallaPostController::class, 'generateCaption'])
-    ->middleware('throttle:20,60')->name('generate-caption');
-    Route::post('/schedule-post', [\App\Http\Controllers\SallaPostController::class, 'schedulePost'])->name('schedule-post');
+    Route::post('/generate-caption', [\App\Http\Controllers\SallaPostController::class, 'generateCaption'])
+        ->middleware('throttle:20,60')->name('generate-caption');
+    Route::post('/schedule-post',    [\App\Http\Controllers\SallaPostController::class, 'schedulePost'])->name('schedule-post');
 });
 
 require __DIR__ . '/auth.php';
