@@ -9,6 +9,7 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "inertiajs/inertia-laravel": "^3.1",
         "intervention/image": "^3.11",
+        "joedixon/laravel-translation": "^1.1",
         "laravel/framework": "^11.0",
         "laravel/socialite": "^5.26",
         "laravel/tinker": "^2.9",

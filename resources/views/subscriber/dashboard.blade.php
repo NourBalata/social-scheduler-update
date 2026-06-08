@@ -17,19 +17,16 @@
                     {{ __('Logout')}}
                 </button>
             </form>
-            <div style="display:flex;gap:8px;">
-    <form method="POST" action="{{ route('lang.switch', 'ar') }}">
-        @csrf
-        <button type="submit" style="padding:6px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:{{ app()->getLocale() === 'ar' ? '#2563eb' : '#fff' }};color:{{ app()->getLocale() === 'ar' ? '#fff' : '#374151' }};font-weight:700;cursor:pointer;">
-          {{ __('Arabic')}}
-        </button>
-    </form>
-    <form method="POST" action="{{ route('lang.switch', 'en') }}">
-        @csrf
-        <button type="submit" style="padding:6px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:{{ app()->getLocale() === 'en' ? '#2563eb' : '#fff' }};color:{{ app()->getLocale() === 'en' ? '#fff' : '#374151' }};font-weight:700;cursor:pointer;">
-            English
-        </button>
-    </form>
+   <div style="display:flex;gap:8px;">
+    <a href="{{ route('lang.switch', 'ar') }}" 
+       style="padding:6px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:{{ app()->getLocale() === 'ar' ? '#2563eb' : '#fff' }};color:{{ app()->getLocale() === 'ar' ? '#fff' : '#374151' }};font-weight:700;cursor:pointer;text-decoration:none;">
+        {{ __('Arabic') }}
+    </a>
+    <a href="{{ route('lang.switch', 'en') }}"
+       style="padding:6px 14px;border-radius:8px;border:1.5px solid #e5e7eb;background:{{ app()->getLocale() === 'en' ? '#2563eb' : '#fff' }};color:{{ app()->getLocale() === 'en' ? '#fff' : '#374151' }};font-weight:700;cursor:pointer;text-decoration:none;">
+        English
+    </a>
+</div>
 
        <button onclick="openModal('publishedPostsModal')" class="add-btn" style="background:#f0fdf4;color:#065f46;border:1px solid #bbf7d0;">
     📋 {{ __('Published Posts') }}

@@ -45,12 +45,22 @@ Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
 Route::get('/webhooks/facebook',  [LeadFormController::class, 'webhookVerify'])->name('webhook.verify');
 Route::post('/webhooks/facebook', [LeadFormController::class, 'webhookReceive'])->name('webhook.receive');
 
-Route::post('/language/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'ar'])) {
-        session(['locale' => $locale]);
+// Route::post('/language/{locale}', function ($locale) {
+//     if (in_array($locale, ['en', 'ar'])) {
+//         session(['locale' => $locale]);
+//     }
+//     return back();
+// })->name('lang.switch');
+
+
+Route::get('/language/{locale}', function ($locale) {
+    if (in_array($locale, ['ar', 'en'])) {
+        session()->put('locale', $locale);
+        session()->save();
     }
-    return back();
+    return redirect()->back();
 })->name('lang.switch');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
 

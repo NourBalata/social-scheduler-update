@@ -5,7 +5,6 @@
 
     <div style="background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.18);">
 
-        {{-- Header --}}
         <div style="padding:20px 24px;border-bottom:1.5px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:12px;">
                 <div style="width:40px;height:40px;background:linear-gradient(135deg,#7c3aed,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center;">
@@ -15,7 +14,7 @@
                     <h3 style="font-size:16px;font-weight:800;color:#111827;margin:0;">Salla Integration</h3>
                     <p style="font-size:12px;color:#6b7280;margin:0;">
                         @if($sallaStore)
-                            Connected: <strong style="color:#059669;">{{ $sallaStore->store_name }}</strong>
+                            {{ __('Connected')}}: <strong style="color:#059669;">{{ $sallaStore->store_name }}</strong>
                         @else
                             Connect your store to auto-generate posts
                         @endif
