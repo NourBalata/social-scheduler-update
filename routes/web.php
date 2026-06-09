@@ -53,7 +53,7 @@ Route::post('/webhooks/facebook', [LeadFormController::class, 'webhookReceive'])
 // })->name('lang.switch');
 
 
-Route::get('/language/{locale}', function ($locale) {
+Route::post('/language/{locale}', function ($locale) {
     if (in_array($locale, ['ar', 'en'])) {
         session()->put('locale', $locale);
         session()->save();
