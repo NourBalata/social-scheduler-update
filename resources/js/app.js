@@ -7,7 +7,7 @@ Alpine.start();
 
 import { createApp, ref } from 'vue';
 import AutopilotModal from './components/AutopilotModal.jsx';
-import DateClickModal from './components/DateClickModal.jsx/index.js';
+import DateClickModal from './components/DateClickModal.jsx';
 
 const vueApp = createApp({
     setup() {

@@ -154,6 +154,7 @@
 @include('subscriber.partials.scripts.main')
 @include('subscriber.partials.scripts.calendar')
 @include('subscriber.partials.scripts.autopilot')
+@vite('resources/js/react-app.jsx')
 @include('subscriber.partials.scripts.media')
 @include('subscriber.partials.styles')
 

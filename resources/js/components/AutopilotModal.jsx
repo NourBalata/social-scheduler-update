@@ -1,4 +1,6 @@
-import { useState } from "react";
+import "./AutopilotModal.css";
+import React, { useState } from "react";
+
 
 // ─── الـ Tones اللي بيختار منها المستخدم ─────────────────────────────────
 const TONES = [

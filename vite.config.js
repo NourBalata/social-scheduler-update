@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/admin/users.js',
                 'resources/js/autopilot.js',
+                 'resources/js/react-app.jsx', 
             ],
             refresh: true,
         }),
